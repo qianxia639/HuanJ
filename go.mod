@@ -1,4 +1,4 @@
-module Windy
+module Dandelion
 
 go 1.19
 
