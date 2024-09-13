@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Dandelion/handler"
 	"context"
 	"fmt"
 	"net/http"
@@ -15,9 +16,7 @@ import (
 func main() {
 	router := gin.Default()
 
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{"message": "successfully..."})
-	})
+	router.POST("/login", handler.Login)
 
 	srv := &http.Server{
 		Addr:    ":8080",
@@ -28,6 +27,7 @@ func main() {
 	defer cancel()
 
 	shutdown(ctx, srv)
+
 }
 
 func shutdown(ctx context.Context, srv *http.Server) {
