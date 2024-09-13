@@ -9,18 +9,14 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	router := gin.Default()
-
-	router.POST("/login", handler.Login)
+	router := handler.NewServer()
 
 	srv := &http.Server{
 		Addr:    ":8080",
-		Handler: router,
+		Handler: router.Router,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
