@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"Dandelion/db/model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,5 +28,10 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "login success...", "username": req.Username})
+	user := model.User{
+		Username: req.Username,
+		Password: req.Password,
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "login success...", "user": user})
 }
