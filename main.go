@@ -4,11 +4,18 @@ import (
 	"Dandelion/handler"
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/jackc/pgx/v5"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {
@@ -21,6 +28,16 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	dbConn, err := pgx.Connect(ctx, `postgres://postgres:postgres@localhost:5432/dandelion?
+	sslmode=disable`)
+	if err != nil {
+
+	}
+	defer dbConn.Close(ctx)
+
+	runDBMigration("file://db/migration", `postgres://postgres:postgres@localhost:5432/dandelion?
+	sslmode=disable`)
 
 	shutdown(ctx, srv)
 
@@ -47,4 +64,17 @@ func shutdown(ctx context.Context, srv *http.Server) {
 	}
 
 	fmt.Println("Server closed...")
+}
+
+func runDBMigration(migrationURL, dbSource string) {
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Fatalf("cannot create new migrate instance, Err: %v", err.Error())
+	}
+
+	if err := migration.Up(); err != migrate.ErrNoChange {
+		log.Fatalf("failed to run migrate up, Err: %v", err.Error())
+	}
+
+	log.Print("db migrated successfully...")
 }

@@ -3,7 +3,7 @@ CREATE TABLE "users" (
     "id" SERIAL PRIMARY KEY,
     "username" VARCHAR(20) UNIQUE NOT NULL,
     "nickname" VARCHAR(60) UNIQUE NOT NULL,
-    "password" TEXT NOT NULL,
+    "password" VARCHAR NOT NULL,
     "email" VARCHAR(64) UNIQUE NOT NULL,
     "gender" SMALLINT NOT NULL DEFAULT 1,
     "profile_picture_url" VARCHAR(255) NOT NULL DEFAULT 'default.jpg',
