@@ -10,7 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -18,21 +19,30 @@ import (
 )
 
 func main() {
-	router := handler.NewServer()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// dbConn, err := pgx.Connect(ctx, `postgres://postgres:postgres@localhost:5432/dandelion?sslmode=disable`)
+	// if err != nil {
+	// 	log.Fatalln("Can't connect: ", err)
+	// }
+	// defer dbConn.Close(ctx)
+
+	db, err := sqlx.Connect("postgres", "user=postgres password=postgres dbname=dandelion sslmode=disable")
+	if err != nil {
+		log.Fatalf("Connect database err: %v\n", err)
+	}
+	defer db.Close()
+
+	// dbServer := service.New(db)
+
+	router := handler.NewHandler(db)
 
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: router.Router,
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	dbConn, err := pgx.Connect(ctx, `postgres://postgres:postgres@localhost:5432/dandelion?sslmode=disable`)
-	if err != nil {
-		log.Fatalln("Can't connect: ", err)
-	}
-	defer dbConn.Close(ctx)
 
 	runDBMigration("file://db/migration", `postgres://postgres:postgres@localhost:5432/dandelion?sslmode=disable`)
 
@@ -63,6 +73,7 @@ func shutdown(ctx context.Context, srv *http.Server) {
 	log.Println("Server closed...")
 }
 
+// sql file migrate
 func runDBMigration(migrationURL, dbSource string) {
 	migration, err := migrate.New(migrationURL, dbSource)
 	if err != nil {
