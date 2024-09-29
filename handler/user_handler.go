@@ -2,6 +2,7 @@ package handler
 
 import (
 	"Dandelion/db/models"
+	"Dandelion/utils"
 	"fmt"
 	"log"
 	"net/http"
@@ -59,7 +60,7 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 	// 判断用户是否存在
 
 	// 密码加密
-
+	utils.HashPassword(req.Password, "")
 	// 创建用户
 	sql := `
 		INSERT INTO users (username, nickname, password, salt, email, gender, created_at, updated_at) 
@@ -78,7 +79,7 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 		_ = rows.Scan(&u)
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": u, "error": err.Error()})
+	ctx.JSON(http.StatusOK, gin.H{"data": u})
 }
 
 type LoginRequest struct {
