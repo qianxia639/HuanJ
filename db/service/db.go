@@ -4,10 +4,10 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type Server struct {
+type Queries struct {
 	db *sqlx.DB
 }
 
-func New(db *sqlx.DB) *Server {
-	return &Server{db: db}
+func New(db *sqlx.DB) *Queries {
+	return &Queries{db: db}
 }

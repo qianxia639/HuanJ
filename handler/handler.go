@@ -1,18 +1,19 @@
 package handler
 
 import (
+	"Dandelion/db/service"
+
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 )
 
 type Handler struct {
 	Router *gin.Engine
-	DB     *sqlx.DB
+	Store  service.Store
 }
 
-func NewHandler(db *sqlx.DB) *Handler {
+func NewHandler(store service.Store) *Handler {
 	handler := &Handler{
-		DB: db,
+		Store: store,
 	}
 
 	handler.setupRouter()
@@ -25,7 +26,6 @@ func (handler *Handler) setupRouter() {
 
 	router.POST("/login", Login)
 	router.POST("/user", handler.CreateUser)
-	router.GET("/get", handler.Get)
 
 	handler.Router = router
 }

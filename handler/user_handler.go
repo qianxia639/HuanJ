@@ -2,9 +2,9 @@ package handler
 
 import (
 	"Dandelion/db/models"
+	"Dandelion/db/service"
 	"Dandelion/utils"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -16,27 +16,8 @@ type CreateUserRequest struct {
 	Password      string `json:"password" binding:"required"`
 	CheckPassword string `json:"check_password" binding:"required"`
 	Nickname      string `json:"nickname" binding:"required"`
-	Email         string `json:"email" binding:"required"`
+	Email         string `json:"email" binding:"required,email"`
 	Gender        int8   `json:"gender"`
-}
-
-func (h *Handler) Get(ctx *gin.Context) {
-	var u models.User
-	rows, err := h.DB.QueryContext(ctx, "SELECT *FROM users")
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "query error", "error": err.Error()})
-		return
-	}
-
-	for rows.Next() {
-		err = rows.Scan(&u)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"message": "scan error", "error": err.Error()})
-			return
-		}
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": "success", "data": u})
 }
 
 func (h *Handler) CreateUser(ctx *gin.Context) {
@@ -56,30 +37,50 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 	}
 
 	// 判断性别是否合法
-
-	// 判断用户是否存在
+	if _, exists := Gender[req.Gender]; !exists {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "unknown gender"})
+		return
+	}
+	// 判断用户名是否存在
+	if i := h.Store.ExistsUsername(ctx, req.Username); i > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名已存在"})
+		return
+	}
+	// 判断昵称是否存在
+	if i := h.Store.ExistsNickname(ctx, req.Nickname); i > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "昵称已存在"})
+		return
+	}
 
 	// 密码加密
-	utils.HashPassword(req.Password, "")
-	// 创建用户
-	sql := `
-		INSERT INTO users (username, nickname, password, salt, email, gender, created_at, updated_at) 
-		VALUES ($1, $2, $3, $4,$5, $6, $7, $8)
-	`
 	salt := fmt.Sprintf("%d", time.Now().Local().UnixNano())
-	log.Printf("salt: %s\n", string(salt))
-	t := time.Now()
-	rows, err := h.DB.QueryContext(ctx, sql, req.Username, req.Nickname, req.Password, string(salt), req.Email, req.Gender, t, t)
+	hashPwd, err := utils.HashPassword(req.Password, salt)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Encoding password faild", "error": err.Error()})
+		return
+	}
+	// 创建用户
+
+	now := time.Now()
+
+	args := &service.CreateUserParams{
+		Username:  req.Username,
+		Nickname:  req.Nickname,
+		Password:  hashPwd,
+		Salt:      salt,
+		Email:     req.Email,
+		Gender:    req.Gender,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	err = h.Store.CreateUser(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "insert error", "error": err.Error()})
 		return
 	}
-	var u models.User
-	for rows.Next() {
-		_ = rows.Scan(&u)
-	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": u})
+	ctx.JSON(http.StatusOK, gin.H{"message": "successfully"})
 }
 
 type LoginRequest struct {
