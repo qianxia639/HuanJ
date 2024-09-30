@@ -2,7 +2,7 @@ package handler
 
 import (
 	"Dandelion/db/models"
-	"Dandelion/db/service"
+	db "Dandelion/db/service"
 	"Dandelion/utils"
 	"fmt"
 	"net/http"
@@ -42,12 +42,12 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 		return
 	}
 	// 判断用户名是否存在
-	if i := h.Store.ExistsUsername(ctx, req.Username); i > 0 {
+	if i := h.Queries.ExistsUsername(ctx, req.Username); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名已存在"})
 		return
 	}
 	// 判断昵称是否存在
-	if i := h.Store.ExistsNickname(ctx, req.Nickname); i > 0 {
+	if i := h.Queries.ExistsNickname(ctx, req.Nickname); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "昵称已存在"})
 		return
 	}
@@ -63,7 +63,7 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 
 	now := time.Now()
 
-	args := &service.CreateUserParams{
+	args := &db.CreateUserParams{
 		Username:  req.Username,
 		Nickname:  req.Nickname,
 		Password:  hashPwd,
@@ -74,7 +74,7 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	err = h.Store.CreateUser(ctx, args)
+	err = h.Queries.CreateUser(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "insert error", "error": err.Error()})
 		return

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Dandelion/db/service"
+	db "Dandelion/db/service"
 	"Dandelion/handler"
 	"context"
 	"log"
@@ -30,17 +30,15 @@ func main() {
 	// }
 	// defer dbConn.Close(ctx)
 
-	db, err := sqlx.Connect("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=dandelion sslmode=disable")
+	dbConnect, err := sqlx.Connect("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=dandelion sslmode=disable")
 	if err != nil {
 		log.Fatalf("Connect database err: %v\n", err)
 	}
-	defer db.Close()
+	defer dbConnect.Close()
 
-	// dbServer := service.New(db)
+	queries := db.NewQueries(dbConnect)
 
-	dbStore := service.NewStore(db)
-
-	router := handler.NewHandler(dbStore)
+	router := handler.NewHandler(queries)
 
 	srv := &http.Server{
 		Addr:    ":8080",

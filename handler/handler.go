@@ -1,19 +1,19 @@
 package handler
 
 import (
-	"Dandelion/db/service"
+	db "Dandelion/db/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	Router *gin.Engine
-	Store  service.Store
+	Router  *gin.Engine
+	Queries *db.Queries
 }
 
-func NewHandler(store service.Store) *Handler {
+func NewHandler(queries *db.Queries) *Handler {
 	handler := &Handler{
-		Store: store,
+		Queries: queries,
 	}
 
 	handler.setupRouter()
