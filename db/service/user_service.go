@@ -1,6 +1,7 @@
 package db
 
 import (
+	"Dandelion/db/models"
 	"context"
 	"time"
 )
@@ -55,4 +56,28 @@ func (q *Queries) ExistsNickname(ctx context.Context, nickname string) int8 {
 	_ = q.db.GetContext(ctx, &count, sql, nickname)
 
 	return count
+}
+
+func (q *Queries) GetUser(ctx context.Context, username string) (u models.User, err error) {
+	sql := `SELECT * FROM users WHERE username = $1 LIMIT 1`
+	// TODO 问题尚未解决
+	// err = q.db.GetContext(ctx, &user, sql, username)
+	row := q.db.QueryRowContext(ctx, sql, username)
+
+	err = row.Scan(
+		&u.ID,
+		&u.Username,
+		&u.Nickname,
+		&u.Password,
+		&u.Salt,
+		&u.Email,
+		&u.Gender,
+		&u.IsOnline,
+		&u.ProfilePictureUrl,
+		&u.PasswordChangedAt,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	)
+
+	return
 }

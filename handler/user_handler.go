@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"Dandelion/db/models"
 	db "Dandelion/db/service"
 	"Dandelion/utils"
 	"fmt"
@@ -11,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CreateUserRequest struct {
+type createUserRequest struct {
 	Username      string `json:"username" binding:"required"`
 	Password      string `json:"password" binding:"required"`
 	CheckPassword string `json:"check_password" binding:"required"`
@@ -20,8 +19,8 @@ type CreateUserRequest struct {
 	Gender        int8   `json:"gender"`
 }
 
-func (h *Handler) CreateUser(ctx *gin.Context) {
-	var req CreateUserRequest
+func (h *Handler) createUser(ctx *gin.Context) {
+	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": "参数错误",
@@ -83,31 +82,39 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "successfully"})
 }
 
-type LoginRequest struct {
+type loginRequest struct {
 	Username string `json:"username" binding:"required"`
-	Password string `json:"password"`
+	Password string `json:"password" binding:"required"`
 }
 
-func Login(ctx *gin.Context) {
+func (h *Handler) login(ctx *gin.Context) {
 
-	var req LoginRequest
-
+	var req loginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	arg := "admin"
-
-	if req.Username != arg || req.Password != arg {
-		ctx.JSON(http.StatusForbidden, gin.H{"message": "权限受限"})
+	// 判断用户是否存在
+	user, err := h.Queries.GetUser(ctx, req.Username)
+	if user.ID == 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存", "error": err.Error()})
+		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存"})
+		return
+	}
+	// 校验密码
+	err = utils.ComparePassword(req.Password, user.Password, user.Salt)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	// 生成Token
+	tokenStr, err := h.Token.CreateToken(user.Username, h.Conf.Token.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	user := models.User{
-		Username: req.Username,
-		Password: req.Password,
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": "login success...", "user": user})
+	// 返回结果
+	ctx.JSON(http.StatusOK, gin.H{"message": "successfullt", "data": tokenStr, "user": user})
 }
