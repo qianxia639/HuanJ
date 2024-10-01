@@ -6,13 +6,15 @@ import (
 	"github.com/o1egl/paseto"
 )
 
+const keySize = 32
+
 type PasetoMaker struct {
 	paseto        *paseto.V2
 	sysmmetricKey []byte
 }
 
 func NewPasetoMaker(sysmmetricKey string) (Maker, error) {
-	if len(sysmmetricKey) != 32 {
+	if len(sysmmetricKey) != keySize {
 		return nil, ErrKeySize
 	}
 

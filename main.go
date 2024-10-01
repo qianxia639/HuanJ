@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Dandelion/config"
 	db "Dandelion/db/service"
 	"Dandelion/handler"
 	"context"
@@ -30,7 +31,12 @@ func main() {
 	// }
 	// defer dbConn.Close(ctx)
 
-	dbConnect, err := sqlx.Connect("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=dandelion sslmode=disable")
+	conf, err := config.LoadConfig("config/.")
+	if err != nil {
+		log.Fatalf("Load config file failed: %w", err)
+	}
+
+	dbConnect, err := sqlx.Connect(conf.Postgres.Driver, conf.Postgres.DatabaseSource())
 	if err != nil {
 		log.Fatalf("Connect database err: %v\n", err)
 	}
@@ -45,7 +51,7 @@ func main() {
 		Handler: router.Router,
 	}
 
-	runDBMigration("file://db/migration", `postgres://postgres:postgres@localhost:5432/dandelion?sslmode=disable`)
+	runDBMigration(conf.Postgres.MigrationUrl, conf.Postgres.DatabaseUrl())
 
 	shutdown(ctx, srv)
 
