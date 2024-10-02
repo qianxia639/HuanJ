@@ -9,23 +9,32 @@ import (
 )
 
 type Handler struct {
-	router     *gin.Engine
+	handlerOptions
+
+	Router *gin.Engine
+}
+
+type handlerOptions struct {
 	queries    *db.Queries
 	tokenMaker token.Maker
 	conf       config.Config
 }
 
-func NewHandler(queries *db.Queries, conf config.Config) (*Handler, error) {
+func NewHandler(opts ...HandlerOption) (*Handler, error) {
+	var handlerOptions handlerOptions
+	for _, o := range opts {
+		o.apply(&handlerOptions)
+	}
 
-	maker, err := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
+	maker, err := token.NewPasetoMaker(handlerOptions.conf.Token.TokenSymmetricKey)
 	if err != nil {
 		return nil, err
 	}
 
+	handlerOptions.tokenMaker = maker
+
 	handler := &Handler{
-		queries:    queries,
-		tokenMaker: maker,
-		conf:       conf,
+		handlerOptions: handlerOptions,
 	}
 
 	handler.setupRouter()
@@ -39,5 +48,41 @@ func (handler *Handler) setupRouter() {
 	router.POST("/user/login", handler.login)
 	router.POST("/user", handler.createUser)
 
-	handler.router = router
+	handler.Router = router
+}
+
+type HandlerOption interface {
+	apply(*handlerOptions)
+}
+
+type funchandlerOption struct {
+	f func(*handlerOptions)
+}
+
+func (fdo *funchandlerOption) apply(do *handlerOptions) {
+	fdo.f(do)
+}
+
+func newFuncHandlerOption(f func(*handlerOptions)) *funchandlerOption {
+	return &funchandlerOption{
+		f: f,
+	}
+}
+
+func InitiaQueries(queries *db.Queries) HandlerOption {
+	return newFuncHandlerOption(func(o *handlerOptions) {
+		o.queries = queries
+	})
+}
+
+func InitiaToken(tokenMaker token.Maker) HandlerOption {
+	return newFuncHandlerOption(func(o *handlerOptions) {
+		o.tokenMaker = tokenMaker
+	})
+}
+
+func InitiaConfig(conf config.Config) HandlerOption {
+	return newFuncHandlerOption(func(o *handlerOptions) {
+		o.conf = conf
+	})
 }

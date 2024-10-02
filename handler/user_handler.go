@@ -3,7 +3,6 @@ package handler
 import (
 	db "Dandelion/db/service"
 	"Dandelion/utils"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -104,7 +103,6 @@ func (h *Handler) login(ctx *gin.Context) {
 		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存"})
 		return
 	}
-	fmt.Printf("user: %v\n", user)
 	// 校验密码
 	err = utils.ComparePassword(req.Password, user.Password, user.Salt)
 	if err != nil {
