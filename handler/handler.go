@@ -9,10 +9,10 @@ import (
 )
 
 type Handler struct {
-	Router  *gin.Engine
-	Queries *db.Queries
-	Token   token.Maker
-	Conf    config.Config
+	router     *gin.Engine
+	queries    *db.Queries
+	tokenMaker token.Maker
+	conf       config.Config
 }
 
 func NewHandler(queries *db.Queries, conf config.Config) (*Handler, error) {
@@ -23,9 +23,9 @@ func NewHandler(queries *db.Queries, conf config.Config) (*Handler, error) {
 	}
 
 	handler := &Handler{
-		Queries: queries,
-		Token:   maker,
-		Conf:    conf,
+		queries:    queries,
+		tokenMaker: maker,
+		conf:       conf,
 	}
 
 	handler.setupRouter()
@@ -39,5 +39,5 @@ func (handler *Handler) setupRouter() {
 	router.POST("/user/login", handler.login)
 	router.POST("/user", handler.createUser)
 
-	handler.Router = router
+	handler.router = router
 }

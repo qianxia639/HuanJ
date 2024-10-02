@@ -1,27 +1,25 @@
 package utils
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var ErrSaltLenght = errors.New("salt lenght must gt 0 byte")
 
 func GenerateSalt() string {
-	salt := make([]byte, 16)
-	_, err := rand.Read(salt)
+	u, err := uuid.NewRandom()
 	if err != nil {
-		// panic("generate salt failed: " + err.Error())
-		log.Printf("generate salt failed: %w", err)
+		log.Printf("generate salt failed: %v", err)
 		return ""
 	}
 
-	return hex.EncodeToString(salt)
+	return strings.ReplaceAll(u.String(), "-", "")
 }
 
 func passwordFmt(password, salt string) string {
