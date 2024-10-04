@@ -45,8 +45,16 @@ func NewHandler(opts ...HandlerOption) (*Handler, error) {
 func (handler *Handler) setupRouter() {
 	router := gin.Default()
 
-	router.POST("/user/login", handler.login)
-	router.POST("/user", handler.createUser)
+	userRouter := router.Group("/user")
+	{
+		userRouter.POST("/login", handler.login)
+		userRouter.POST("/", handler.createUser)
+	}
+	userRouterAuth := userRouter.Use(handler.authorizationMiddleware())
+	{
+
+		userRouterAuth.GET("/", handler.getUser)
+	}
 
 	handler.Router = router
 }

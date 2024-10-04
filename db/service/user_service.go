@@ -59,29 +59,9 @@ func (q *Queries) ExistsNickname(ctx context.Context, nickname string) int8 {
 }
 
 func (q *Queries) GetUser(ctx context.Context, username string) (u models.User, err error) {
-	// sql := `SELECT
-	// 	id, username, nickname, password, salt, email, gender, is_online, profile_picture_url, password_changed_at, created_at, updated_at
-	//  FROM users WHERE username = $1 LIMIT 1`
 
 	sql := `SELECT * FROM users WHERE username = $1 LIMIT 1`
-	// TODO 问题尚未解决
 	err = q.db.GetContext(ctx, &u, sql, username)
-	// row := q.db.QueryRowContext(ctx, sql, username)
-
-	// err = row.Scan(
-	// 	&u.ID,
-	// 	&u.Username,
-	// 	&u.Nickname,
-	// 	&u.Password,
-	// 	&u.Salt,
-	// 	&u.Email,
-	// 	&u.Gender,
-	// 	&u.IsOnline,
-	// 	&u.ProfilePictureUrl,
-	// 	&u.PasswordChangedAt,
-	// 	&u.CreatedAt,
-	// 	&u.UpdatedAt,
-	// )
 
 	return
 }

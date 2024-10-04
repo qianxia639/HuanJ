@@ -2,6 +2,7 @@ package handler
 
 import (
 	db "Dandelion/db/service"
+	"Dandelion/token"
 	"Dandelion/utils"
 	"net/http"
 	"time"
@@ -118,4 +119,26 @@ func (h *Handler) login(ctx *gin.Context) {
 
 	// 返回结果
 	ctx.JSON(http.StatusOK, gin.H{"message": "successfullt", "data": tokenStr, "user": user})
+}
+
+func (h *Handler) getUser(ctx *gin.Context) {
+
+	k, exists := ctx.Get(authorizationPayloadKey)
+	if !exists {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Not user"})
+		return
+	}
+	payload, ok := k.(*token.Payload)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "type assertion failed"})
+		return
+	}
+
+	user, err := h.queries.GetUser(ctx, payload.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": user})
 }
