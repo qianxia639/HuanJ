@@ -44,7 +44,7 @@ func main() {
 
 	queries := db.NewQueries(dbConnect)
 
-	router, err := handler.NewHandler(handler.InitiaQueries(queries), handler.InitiaConfig(conf))
+	router, err := handler.NewHandler(conf, queries)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -41,12 +41,12 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		return
 	}
 	// 判断用户名是否存在
-	if i := h.queries.ExistsUser(ctx, req.Username, req.Email); i > 0 {
+	if i := h.Queries.ExistsUser(ctx, req.Username, req.Email); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名已存在"})
 		return
 	}
 	// 判断昵称是否存在
-	if i := h.queries.ExistsNickname(ctx, req.Nickname); i > 0 {
+	if i := h.Queries.ExistsNickname(ctx, req.Nickname); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "昵称已存在"})
 		return
 	}
@@ -75,7 +75,7 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		UpdatedAt: now,
 	}
 
-	err = h.queries.CreateUser(ctx, args)
+	err = h.Queries.CreateUser(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "insert error", "error": err.Error()})
 		return
@@ -98,7 +98,7 @@ func (h *Handler) login(ctx *gin.Context) {
 	}
 
 	// 判断用户是否存在
-	user, err := h.queries.GetUser(ctx, req.Username)
+	user, err := h.Queries.GetUser(ctx, req.Username)
 	if user.ID == 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存", "error": err.Error()})
 		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存"})
@@ -111,7 +111,7 @@ func (h *Handler) login(ctx *gin.Context) {
 		return
 	}
 	// 生成Token
-	tokenStr, err := h.tokenMaker.CreateToken(user.Username, h.conf.Token.AccessTokenDuration)
+	tokenStr, err := h.Token.CreateToken(user.Username, h.Conf.Token.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -134,11 +134,32 @@ func (h *Handler) getUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := h.queries.GetUser(ctx, payload.Username)
+	user, err := h.Queries.GetUser(ctx, payload.Username)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": user})
+}
+
+type updateUserRequest struct {
+	Gender   *int8   `json:"gender"`
+	Nickname *string `json:"nickname"`
+	Avatar   *string `json:"avatar"`
+}
+
+func (h *Handler) updateUser(ctx *gin.Context) {
+	var req updateUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+
+	}
+
+	if req.Nickname != nil && *req.Nickname != "" {
+		// 判断用户昵称是否重复
+		if i := h.Queries.ExistsNickname(ctx, *req.Nickname); i > 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户昵称重复"})
+			return
+		}
+	}
 }

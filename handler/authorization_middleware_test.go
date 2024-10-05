@@ -92,7 +92,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, authPath, nil)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, request, h.tokenMaker)
+			tc.setupAuth(t, request, h.Token)
 			h.Router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 

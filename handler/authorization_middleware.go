@@ -27,7 +27,7 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 		}
 
 		fields := strings.Fields(authorization)
-		payload, err := h.tokenMaker.VerifyToken(fields[1])
+		payload, err := h.Token.VerifyToken(fields[1])
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return

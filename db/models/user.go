@@ -12,7 +12,7 @@ type User struct {
 	// 性别, 1 男, 2 女, 3 未知
 	Gender            int8      `json:"gender,omitempty" db:"gender"`
 	IsOnline          bool      `json:"is_online"  db:"is_online"`
-	ProfilePictureUrl string    `json:"profile_picture_url,omitempty" db:"profile_picture_url"`
+	Avatar            string    `json:"avatar,omitempty" db:"avatar"`
 	PasswordChangedAt time.Time `json:"password_changed_at,omitempty" db:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at,omitempty" db:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at,omitempty" db:"updated_at"`

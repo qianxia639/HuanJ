@@ -65,3 +65,11 @@ func (q *Queries) GetUser(ctx context.Context, username string) (u models.User, 
 
 	return
 }
+
+func (q *Queries) UpdateUser(ctx context.Context, user models.User) error {
+
+	sql := `UPDATE users SET WHERE id = ?`
+	q.db.ExecContext(ctx, sql)
+
+	return nil
+}
