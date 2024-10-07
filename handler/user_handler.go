@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"Dandelion/db/models"
 	db "Dandelion/db/service"
-	"Dandelion/token"
 	"Dandelion/utils"
 	"net/http"
 	"time"
@@ -123,24 +123,24 @@ func (h *Handler) login(ctx *gin.Context) {
 
 func (h *Handler) getUser(ctx *gin.Context) {
 
-	k, exists := ctx.Get(authorizationPayloadKey)
-	if !exists {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Not user"})
-		return
-	}
-	payload, ok := k.(*token.Payload)
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "type assertion failed"})
-		return
-	}
+	// k, exists := ctx.Get(authorizationPayloadKey)
+	// if !exists {
+	// 	ctx.JSON(http.StatusNotFound, gin.H{"error": "Not user"})
+	// 	return
+	// }
+	// payload, ok := k.(*token.Payload)
+	// if !ok {
+	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": "type assertion failed"})
+	// 	return
+	// }
 
-	user, err := h.Queries.GetUser(ctx, payload.Username)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	// user, err := h.Queries.GetUser(ctx, payload.Username)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": user})
+	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": h.CurrentUser})
 }
 
 type updateUserRequest struct {
@@ -154,12 +154,36 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 
 	}
+	user, ok := h.CurrentUser.(models.User)
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "断言失败"})
+		return
+	}
 
-	if req.Nickname != nil && *req.Nickname != "" {
+	if req.Nickname != nil && *req.Nickname != user.Nickname {
 		// 判断用户昵称是否重复
 		if i := h.Queries.ExistsNickname(ctx, *req.Nickname); i > 0 {
 			ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户昵称重复"})
 			return
 		}
+		user.Nickname = *req.Nickname
 	}
+
+	if req.Gender != nil {
+		user.Gender = *req.Gender
+	}
+
+	if req.Avatar != nil {
+		user.Avatar = *req.Avatar
+	}
+
+	h.CurrentUser = user
+
+	err := h.Queries.UpdateUser(ctx, user)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Update user failed", "error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": h.CurrentUser})
 }

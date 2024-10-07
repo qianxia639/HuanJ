@@ -9,10 +9,11 @@ import (
 )
 
 type Handler struct {
-	Router  *gin.Engine
-	Conf    config.Config
-	Queries *db.Queries
-	Token   token.Maker
+	Router      *gin.Engine
+	Conf        config.Config
+	Queries     *db.Queries
+	Token       token.Maker
+	CurrentUser interface{}
 }
 
 func NewHandler(conf config.Config, queries *db.Queries) (*Handler, error) {
@@ -45,6 +46,7 @@ func (handler *Handler) setupRouter() {
 	{
 
 		userRouterAuth.GET("/", handler.getUser)
+		userRouterAuth.PUT("/", handler.updateUser)
 	}
 
 	handler.Router = router

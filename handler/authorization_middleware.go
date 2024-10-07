@@ -33,7 +33,13 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Set(authorizationPayloadKey, payload)
+		user, err := h.Queries.GetUser(ctx, payload.Username)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		h.CurrentUser = user
+		// ctx.Set(authorizationPayloadKey, payload)
 
 		ctx.Next()
 	}

@@ -68,8 +68,19 @@ func (q *Queries) GetUser(ctx context.Context, username string) (u models.User, 
 
 func (q *Queries) UpdateUser(ctx context.Context, user models.User) error {
 
-	sql := `UPDATE users SET WHERE id = ?`
-	q.db.ExecContext(ctx, sql)
+	sql := `UPDATE users 
+			SET 
+				gender = $1, 
+				nickname = $2, 
+				avatar = $3, 
+				updated_at = now()
+			WHERE id = $4`
+	_, err := q.db.ExecContext(ctx, sql,
+		user.Gender,
+		user.Nickname,
+		user.Avatar,
+		user.ID,
+	)
 
-	return nil
+	return err
 }
