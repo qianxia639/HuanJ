@@ -37,6 +37,8 @@ func NewHandler(conf config.Config, queries *db.Queries) (*Handler, error) {
 func (handler *Handler) setupRouter() {
 	router := gin.Default()
 
+	router.Use(handler.CORS())
+
 	userRouter := router.Group("/user")
 	{
 		userRouter.POST("/login", handler.login)

@@ -100,8 +100,9 @@ func (h *Handler) login(ctx *gin.Context) {
 	// 判断用户是否存在
 	user, err := h.Queries.GetUser(ctx, req.Username)
 	if user.ID == 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存", "error": err.Error()})
+		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存", "error": err.Error()})
 		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存"})
+		Error(ctx, http.StatusUnauthorized, "用户名不存在")
 		return
 	}
 	// 校验密码
@@ -118,7 +119,8 @@ func (h *Handler) login(ctx *gin.Context) {
 	}
 
 	// 返回结果
-	ctx.JSON(http.StatusOK, gin.H{"message": "successfullt", "data": tokenStr, "user": user})
+	// ctx.JSON(http.StatusOK, gin.H{"message": "successfullt", "data": tokenStr, "user": user})
+	Success(ctx, tokenStr)
 }
 
 func (h *Handler) getUser(ctx *gin.Context) {
