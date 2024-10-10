@@ -15,7 +15,7 @@ const (
 
 func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		authorization := ctx.GetHeader(authorizationHeader)
+		authorization := ctx.Request.Header.Get(authorizationHeader)
 		if len(authorization) == 0 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization header is not provided"})
 			return

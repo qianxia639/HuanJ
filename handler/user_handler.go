@@ -29,6 +29,17 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		return
 	}
 
+	if !utils.ValidatePassword(req.Password) {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "密码格式不正确"})
+		return
+	}
+
+	if !utils.ValidateUsername(req.Username) {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名格式不正确"})
+
+		return
+	}
+
 	// 判断密码是否一致
 	if req.Password != req.CheckPassword {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "密码不一致"})
