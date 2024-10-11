@@ -72,13 +72,13 @@ func (q *Queries) UpdateUser(ctx context.Context, user models.User) error {
 			SET 
 				gender = $1, 
 				nickname = $2, 
-				avatar = $3, 
-				updated_at = now()
+				updated_at = $3
 			WHERE id = $4`
 	_, err := q.db.ExecContext(ctx, sql,
 		user.Gender,
 		user.Nickname,
 		user.Avatar,
+		user.UpdatedAt,
 		user.ID,
 	)
 

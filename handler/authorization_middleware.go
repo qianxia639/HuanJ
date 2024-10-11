@@ -21,6 +21,12 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		ua := ctx.Request.Header.Get("User-Agent")
+		if len(ua) == 0 {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Not User-Agent"})
+			return
+		}
+
 		if !strings.HasPrefix(authorization, authorizationPrefix) {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization header invalid"})
 			return
@@ -39,7 +45,6 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 			return
 		}
 		h.CurrentUser = user
-		// ctx.Set(authorizationPayloadKey, payload)
 
 		ctx.Next()
 	}

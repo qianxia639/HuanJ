@@ -159,7 +159,6 @@ func (h *Handler) getUser(ctx *gin.Context) {
 type updateUserRequest struct {
 	Gender   *int8   `json:"gender"`
 	Nickname *string `json:"nickname"`
-	Avatar   *string `json:"avatar"`
 }
 
 func (h *Handler) updateUser(ctx *gin.Context) {
@@ -186,10 +185,7 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 		user.Gender = *req.Gender
 	}
 
-	if req.Avatar != nil {
-		user.Avatar = *req.Avatar
-	}
-
+	user.UpdatedAt = time.Now()
 	h.CurrentUser = user
 
 	err := h.Queries.UpdateUser(ctx, user)

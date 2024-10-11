@@ -19,6 +19,7 @@ func addAuthorization(t *testing.T, request *http.Request, tokenMaker token.Make
 
 	authorization := fmt.Sprintf("%s%s", authorizationPrefix, token)
 	request.Header.Set(authorizationHeader, authorization)
+	request.Header.Set("User-Agent", "test/ua")
 
 }
 
