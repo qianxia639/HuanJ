@@ -77,7 +77,6 @@ func (q *Queries) UpdateUser(ctx context.Context, user models.User) error {
 	_, err := q.db.ExecContext(ctx, sql,
 		user.Gender,
 		user.Nickname,
-		user.Avatar,
 		user.UpdatedAt,
 		user.ID,
 	)

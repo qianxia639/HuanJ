@@ -9,19 +9,15 @@ import (
 )
 
 type Handler struct {
-	Router      *gin.Engine
-	Conf        config.Config
-	Queries     *db.Queries
-	Token       token.Maker
-	CurrentUser interface{}
+	Router  *gin.Engine
+	Conf    config.Config
+	Queries *db.Queries
+	Token   token.Maker
 }
 
 func NewHandler(conf config.Config, queries *db.Queries) (*Handler, error) {
 
-	maker, err := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
-	if err != nil {
-		return nil, err
-	}
+	maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
 
 	handler := &Handler{
 		Conf:    conf,

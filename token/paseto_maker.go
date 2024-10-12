@@ -13,9 +13,9 @@ type PasetoMaker struct {
 	sysmmetricKey []byte
 }
 
-func NewPasetoMaker(sysmmetricKey string) (Maker, error) {
+func NewPasetoMaker(sysmmetricKey string) Maker {
 	if len(sysmmetricKey) != keySize {
-		return nil, ErrKeySize
+		panic(ErrKeySize)
 	}
 
 	maker := &PasetoMaker{
@@ -23,15 +23,12 @@ func NewPasetoMaker(sysmmetricKey string) (Maker, error) {
 		sysmmetricKey: []byte(sysmmetricKey),
 	}
 
-	return maker, nil
+	return maker
 }
 
 // 创建Token
 func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
-	payload, err := NewPayload(username, duration)
-	if err != nil {
-		return "", err
-	}
+	payload := NewPayload(username, duration)
 
 	token, err := maker.paseto.Encrypt(maker.sysmmetricKey, payload, nil)
 

@@ -1,9 +1,10 @@
 package handler
 
 import (
-	"Dandelion/db/models"
 	db "Dandelion/db/service"
+	"Dandelion/token"
 	"Dandelion/utils"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -136,24 +137,20 @@ func (h *Handler) login(ctx *gin.Context) {
 
 func (h *Handler) getUser(ctx *gin.Context) {
 
-	// k, exists := ctx.Get(authorizationPayloadKey)
-	// if !exists {
-	// 	ctx.JSON(http.StatusNotFound, gin.H{"error": "Not user"})
-	// 	return
-	// }
-	// payload, ok := k.(*token.Payload)
-	// if !ok {
-	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": "type assertion failed"})
-	// 	return
-	// }
+	data, exist := ctx.Get(authorizationPayloadKey)
+	if !exist {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Not user"})
+		return
+	}
+	payload := data.(*token.Payload)
 
-	// user, err := h.Queries.GetUser(ctx, payload.Username)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
+	user, err := h.Queries.GetUser(ctx, payload.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": h.CurrentUser})
+	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": user})
 }
 
 type updateUserRequest struct {
@@ -166,13 +163,22 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 
 	}
-	user, ok := h.CurrentUser.(models.User)
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "断言失败"})
+
+	data, exist := ctx.Get(authorizationPayloadKey)
+	if !exist {
+		ctx.JSON(http.StatusNotFound, gin.H{"message": "Key does not exist"})
 		return
 	}
 
-	if req.Nickname != nil && *req.Nickname != user.Nickname {
+	payload := data.(*token.Payload)
+
+	user, _ := h.Queries.GetUser(ctx, payload.Username)
+	if user.ID < 1 {
+		ctx.JSON(http.StatusNotFound, gin.H{"message": "用户不存在"})
+		return
+	}
+	fmt.Printf("req.Nickname: %v\n", *req.Nickname)
+	if len(*req.Nickname) > 3 && *req.Nickname != user.Nickname {
 		// 判断用户昵称是否重复
 		if i := h.Queries.ExistsNickname(ctx, *req.Nickname); i > 0 {
 			ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户昵称重复"})
@@ -186,7 +192,6 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 	}
 
 	user.UpdatedAt = time.Now()
-	h.CurrentUser = user
 
 	err := h.Queries.UpdateUser(ctx, user)
 	if err != nil {
@@ -194,5 +199,5 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": h.CurrentUser})
+	ctx.JSON(http.StatusOK, gin.H{"data": user})
 }
