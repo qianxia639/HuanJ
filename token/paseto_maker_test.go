@@ -9,8 +9,7 @@ import (
 )
 
 func TestPasetoMaker(t *testing.T) {
-	maker, err := NewPasetoMaker(utils.RandomString(32))
-	require.NoError(t, err)
+	maker := NewPasetoMaker(utils.RandomString(32))
 
 	username := utils.RandomString(6)
 	duration := time.Minute
@@ -33,8 +32,7 @@ func TestPasetoMaker(t *testing.T) {
 }
 
 func TestExpiredPasetoToken(t *testing.T) {
-	maker, err := NewPasetoMaker(utils.RandomString(32))
-	require.NoError(t, err)
+	maker := NewPasetoMaker(utils.RandomString(32))
 
 	token, err := maker.CreateToken(utils.RandomString(6), -time.Minute)
 	require.NoError(t, err)
@@ -44,19 +42,4 @@ func TestExpiredPasetoToken(t *testing.T) {
 	require.Error(t, err)
 	require.EqualError(t, err, ErrExpiredToken.Error())
 	require.Nil(t, payload)
-}
-
-func TestKeySizePasetoToken(t *testing.T) {
-	_, err := NewPasetoMaker(utils.RandomString(30))
-	require.Error(t, err)
-	require.EqualError(t, err, ErrKeySize.Error())
-
-	// token, err := maker.CreateToken(utils.RandomString(6), -time.Minute)
-	// require.NoError(t, err)
-	// require.NotEmpty(t, token)
-
-	// payload, err := maker.VerifyToken(token)
-	// require.Error(t, err)
-	// require.EqualError(t, err, ErrExpiredToken.Error())
-	// require.Nil(t, payload)
 }
