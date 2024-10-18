@@ -13,3 +13,27 @@ CREATE TABLE IF NOT EXISTS "users" (
     "created_at" TIMESTAMPTZ NOT NULL,
     "updated_at" TIMESTAMPTZ NOT NULL
 )
+
+COMMENT ON COLUMN "users"."id" IS '用户ID';
+
+COMMENT ON COLUMN "users"."username" IS '用户名';
+
+COMMENT ON COLUMN "users"."nickname" IS '用户昵称';
+
+COMMENT ON COLUMN "users"."password" IS '用户密码';
+
+COMMENT ON COLUMN "users"."salt" IS '随机盐';
+
+COMMENT ON COLUMN "users"."email" IS '用户邮箱';
+
+COMMENT ON COLUMN "users"."gender" IS '用户性别, 1:男, 2:女, 3: 未知';
+
+COMMENT ON COLUMN "users"."avatar" IS '用户头像';
+
+COMMENT ON COLUMN "users"."is_online" IS '是否在线, F: 离线, T: 在线';
+
+COMMENT ON COLUMN "users"."password_changed_at" IS '上次密码更新时间';
+
+COMMENT ON COLUMN "users"."created_at" IS '创建时间';
+
+COMMENT ON COLUMN "users"."updated_at" IS '更新时间';
