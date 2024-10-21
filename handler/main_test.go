@@ -27,8 +27,8 @@ func newTestHandler(t *testing.T, queries *db.Queries) *Handler {
 		},
 	}
 
-	h, err := NewHandler(conf, queries)
-	require.NoError(t, err)
+	h := NewHandler(conf, queries)
+	require.Equal(t, 1, 1)
 
 	return h
 }

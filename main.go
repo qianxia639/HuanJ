@@ -44,10 +44,7 @@ func main() {
 
 	queries := db.NewQueries(dbConnect)
 
-	router, err := handler.NewHandler(conf, queries)
-	if err != nil {
-		log.Fatal(err)
-	}
+	router := handler.NewHandler(conf, queries)
 
 	srv := &http.Server{
 		Addr:    ":8080",

@@ -6,8 +6,10 @@ CREATE TABLE IF NOT EXISTS "friends" (
     "status" SMALLINT NOT NULL DEFAULT 1,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id,friend_id),  -- 确保一对好友关系唯一
-)
+    UNIQUE(user_id, friend_id),  -- 确保一对好友关系唯一
+    CONSTRAINT "friends_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT "friends_friend_id_fk" FOREIGN KEY (friend_id) REFERENCES users (id)
+);
 
 COMMENT ON COLUMN "friends"."id" IS '好友关系标识';
 

@@ -15,7 +15,7 @@ type Handler struct {
 	Token   token.Maker
 }
 
-func NewHandler(conf config.Config, queries *db.Queries) (*Handler, error) {
+func NewHandler(conf config.Config, queries *db.Queries) *Handler {
 
 	maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
 
@@ -27,7 +27,7 @@ func NewHandler(conf config.Config, queries *db.Queries) (*Handler, error) {
 
 	handler.setupRouter()
 
-	return handler, nil
+	return handler
 }
 
 func (handler *Handler) setupRouter() {
@@ -35,17 +35,19 @@ func (handler *Handler) setupRouter() {
 
 	router.Use(handler.CORS())
 
-	userRouter := router.Group("/user")
-	{
-		userRouter.POST("/login", handler.login)
-		userRouter.POST("/", handler.createUser)
-	}
-	userRouterAuth := userRouter.Use(handler.authorizationMiddleware())
-	{
+	authRouter := router.Group("")
+	authRouter.Use(handler.authorizationMiddleware())
 
-		userRouterAuth.GET("/", handler.getUser)
-		userRouterAuth.PUT("/", handler.updateUser)
-	}
+	// User Router
+	router.POST("/login", handler.login)
+	router.POST("/user", handler.createUser)
+
+	authRouter.GET("/user", handler.getUser)
+	authRouter.PUT("/user", handler.updateUser)
+
+	// Friend Router
+	authRouter.POST("/friend", handler.createdFriend)
+	authRouter.GET("/friend", handler.getFriends)
 
 	handler.Router = router
 }
