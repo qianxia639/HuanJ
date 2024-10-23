@@ -14,6 +14,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -24,12 +25,6 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	// dbConn, err := pgx.Connect(ctx, `postgres://postgres:postgres@localhost:5432/dandelion?sslmode=disable`)
-	// if err != nil {
-	// 	log.Fatalln("Can't connect: ", err)
-	// }
-	// defer dbConn.Close(ctx)
 
 	conf, err := config.LoadConfig("config/.")
 	if err != nil {
@@ -42,9 +37,14 @@ func main() {
 	}
 	defer dbConnect.Close()
 
+	rdb := initRedisClient(conf.RedisClient.Addr)
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		log.Fatalf("Connect Redis error: %v", err)
+	}
+
 	queries := db.NewQueries(dbConnect)
 
-	router := handler.NewHandler(conf, queries)
+	router := handler.NewHandler(conf, queries, rdb)
 
 	srv := &http.Server{
 		Addr:    ":8080",
@@ -92,4 +92,10 @@ func runDBMigration(migrationURL, dbSource string) {
 	}
 
 	log.Print("db migrated successfully...")
+}
+
+func initRedisClient(addr string) *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr: addr,
+	})
 }

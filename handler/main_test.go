@@ -27,7 +27,7 @@ func newTestHandler(t *testing.T, queries *db.Queries) *Handler {
 		},
 	}
 
-	h := NewHandler(conf, queries)
+	h := NewHandler(conf, queries, nil)
 	require.Equal(t, 1, 1)
 
 	return h

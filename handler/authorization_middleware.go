@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"Dandelion/db/model"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -39,7 +41,22 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Set(authorizationPayloadKey, payload)
+		var loginUserInfo model.LoginUserInfo
+		err = h.Redis.Get(ctx, fmt.Sprintf("t_%s", payload.Username)).Scan(&loginUserInfo)
+		if err != nil {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		// TODO: ua不一致标识异设备请求，可能需要做处理
+		// if ua != loginUserInfo.UserAgent {
+		// 	ctx.Abort()
+		// 	return
+		// }
+
+		h.CurrentUserInfo = loginUserInfo
+
+		// ctx.Set(authorizationPayloadKey, payload)
 
 		ctx.Next()
 	}

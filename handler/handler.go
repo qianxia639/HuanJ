@@ -2,20 +2,24 @@ package handler
 
 import (
 	"Dandelion/config"
+	"Dandelion/db/model"
 	db "Dandelion/db/service"
 	"Dandelion/token"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 type Handler struct {
-	Router  *gin.Engine
-	Conf    config.Config
-	Queries *db.Queries
-	Token   token.Maker
+	Router          *gin.Engine
+	Conf            config.Config
+	Queries         *db.Queries
+	Token           token.Maker
+	CurrentUserInfo model.LoginUserInfo
+	Redis           *redis.Client
 }
 
-func NewHandler(conf config.Config, queries *db.Queries) *Handler {
+func NewHandler(conf config.Config, queries *db.Queries, rdb *redis.Client) *Handler {
 
 	maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
 
@@ -23,6 +27,7 @@ func NewHandler(conf config.Config, queries *db.Queries) *Handler {
 		Conf:    conf,
 		Queries: queries,
 		Token:   maker,
+		Redis:   rdb,
 	}
 
 	handler.setupRouter()

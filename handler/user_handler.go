@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"Dandelion/db/model"
 	db "Dandelion/db/service"
 	"Dandelion/token"
 	"Dandelion/utils"
@@ -103,6 +104,12 @@ type loginRequest struct {
 
 func (h *Handler) login(ctx *gin.Context) {
 
+	ua := ctx.Request.Header.Get("User-Agent")
+	if len(ua) == 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Can't find 'User-Agent' in header"})
+		return
+	}
+
 	var req loginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -125,6 +132,18 @@ func (h *Handler) login(ctx *gin.Context) {
 	}
 	// 生成Token
 	tokenStr, err := h.Token.CreateToken(user.Username, h.Conf.Token.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	loginUserInfo := model.LoginUserInfo{
+		User:      user,
+		UserAgent: ua,
+		LoginIp:   ctx.ClientIP(),
+	}
+	key := fmt.Sprintf("t_%s", user.Username)
+	err = h.Redis.Set(ctx, key, &loginUserInfo, 24*time.Hour).Err()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

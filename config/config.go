@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	Postgres Postgres
-	Token    Token
+	Postgres    Postgres
+	Token       Token
+	RedisClient Redis
 }
 
 type Postgres struct {
@@ -34,4 +35,8 @@ func (p *Postgres) DatabaseUrl() string {
 type Token struct {
 	TokenSymmetricKey   string        `mapstructure:"token_symmetric_key"`
 	AccessTokenDuration time.Duration `mapstructure:"access_token_duration"`
+}
+
+type Redis struct {
+	Addr string `mapstructure:"addr"`
 }
