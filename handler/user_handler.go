@@ -3,10 +3,10 @@ package handler
 import (
 	"Dandelion/db/model"
 	db "Dandelion/db/service"
-	"Dandelion/token"
 	"Dandelion/utils"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -156,20 +156,7 @@ func (h *Handler) login(ctx *gin.Context) {
 
 func (h *Handler) getUser(ctx *gin.Context) {
 
-	data, exist := ctx.Get(authorizationPayloadKey)
-	if !exist {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Not user"})
-		return
-	}
-	payload := data.(*token.Payload)
-
-	user, err := h.Queries.GetUser(ctx, payload.Username)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": user})
+	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": h.CurrentUserInfo})
 }
 
 type updateUserRequest struct {
@@ -180,43 +167,40 @@ type updateUserRequest struct {
 func (h *Handler) updateUser(ctx *gin.Context) {
 	var req updateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-	}
-
-	data, exist := ctx.Get(authorizationPayloadKey)
-	if !exist {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "Key does not exist"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "参数错误"})
 		return
 	}
 
-	payload := data.(*token.Payload)
-
-	user, _ := h.Queries.GetUser(ctx, payload.Username)
-	if user.ID < 1 {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "用户不存在"})
+	auth := ctx.Request.Header.Get(authorizationHeader)
+	fields := strings.Fields(auth)
+	payload, err := h.Token.VerifyToken(fields[1])
+	if err != nil {
+		Error(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
-	fmt.Printf("req.Nickname: %v\n", *req.Nickname)
-	if len(*req.Nickname) > 3 && *req.Nickname != user.Nickname {
-		// 判断用户昵称是否重复
+
+	if req.Nickname != nil && len(*req.Nickname) > 3 && *req.Nickname != h.CurrentUserInfo.Nickname {
+		// 判断用户昵称是否存在
 		if i := h.Queries.ExistsNickname(ctx, *req.Nickname); i > 0 {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户昵称重复"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户昵称存在"})
 			return
 		}
-		user.Nickname = *req.Nickname
+		h.CurrentUserInfo.Nickname = *req.Nickname
 	}
 
 	if req.Gender != nil {
-		user.Gender = *req.Gender
+		h.CurrentUserInfo.Gender = *req.Gender
 	}
 
-	user.UpdatedAt = time.Now()
+	h.CurrentUserInfo.UpdatedAt = time.Now()
 
-	err := h.Queries.UpdateUser(ctx, user)
+	err = h.Queries.UpdateUser(ctx, h.CurrentUserInfo.User)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Update user failed", "error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": user})
+	_ = h.Redis.Set(ctx, fmt.Sprintf("t_%s", payload.Username), &h.CurrentUserInfo, 24*time.Hour)
+
+	ctx.JSON(http.StatusOK, gin.H{"data": h.CurrentUserInfo})
 }

@@ -56,8 +56,6 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 
 		h.CurrentUserInfo = loginUserInfo
 
-		// ctx.Set(authorizationPayloadKey, payload)
-
 		ctx.Next()
 	}
 }
