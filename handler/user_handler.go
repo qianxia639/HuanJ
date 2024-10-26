@@ -16,9 +16,8 @@ type createUserRequest struct {
 	Username      string `json:"username" binding:"required"`
 	Password      string `json:"password" binding:"required"`
 	CheckPassword string `json:"check_password" binding:"required"`
-	Nickname      string `json:"nickname" binding:"required"`
 	Email         string `json:"email" binding:"required,email"`
-	Gender        int8   `json:"gender"`
+	Gender        int8   `json:"gender" binding:"required"`
 }
 
 func (h *Handler) createUser(ctx *gin.Context) {
@@ -58,11 +57,6 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名已存在"})
 		return
 	}
-	// 判断昵称是否存在
-	if i := h.Queries.ExistsNickname(ctx, req.Nickname); i > 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "昵称已存在"})
-		return
-	}
 
 	// 判断邮箱是否存在
 
@@ -75,17 +69,13 @@ func (h *Handler) createUser(ctx *gin.Context) {
 	}
 	// 创建用户
 
-	now := time.Now()
-
 	args := &db.CreateUserParams{
-		Username:  req.Username,
-		Nickname:  req.Nickname,
-		Password:  hashPwd,
-		Salt:      salt,
-		Email:     req.Email,
-		Gender:    req.Gender,
-		CreatedAt: now,
-		UpdatedAt: now,
+		Username: req.Username,
+		Nickname: req.Username,
+		Password: hashPwd,
+		Salt:     salt,
+		Email:    req.Email,
+		Gender:   req.Gender,
 	}
 
 	err = h.Queries.CreateUser(ctx, args)

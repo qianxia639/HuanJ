@@ -3,27 +3,24 @@ package db
 import (
 	"Dandelion/db/model"
 	"context"
-	"time"
 )
 
 type CreateUserParams struct {
-	Username  string    `json:"username"`
-	Nickname  string    `json:"nickname"`
-	Password  string    `json:"password"`
-	Salt      string    `json:"salt"`
-	Email     string    `json:"email"`
-	Gender    int8      `json:"gender"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Username string `json:"username"`
+	Nickname string `json:"nickname"`
+	Password string `json:"password"`
+	Salt     string `json:"salt"`
+	Email    string `json:"email"`
+	Gender   int8   `json:"gender"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, args *CreateUserParams) error {
 
 	sql := `
 	INSERT INTO users (
-		username, nickname, password, salt, email, gender, created_at, updated_at
+		username, nickname, password, salt, email, gender
 	) VALUES (
-		$1, $2, $3, $4,$5, $6, $7, $8
+		$1, $2, $3, $4,$5, $6
 	)`
 
 	row := q.db.QueryRowContext(ctx, sql,
@@ -33,11 +30,8 @@ func (q *Queries) CreateUser(ctx context.Context, args *CreateUserParams) error 
 		args.Salt,
 		args.Email,
 		args.Gender,
-		args.CreatedAt,
-		args.UpdatedAt,
 	)
 	return row.Err()
-
 }
 
 func (q *Queries) ExistsUser(ctx context.Context, username, email string) int8 {
