@@ -67,3 +67,13 @@ func (q *Queries) GetFriendAll(ctx context.Context, userId uint32) ([]model.Frie
 
 	return friends, err
 }
+
+func (q *Queries) DeleteFriend(ctx context.Context, userId, friendId uint32) error {
+
+	sql := `DELETE FROM friends WHERE (user_id = $1 AND friend_id = $2) 
+								OR (user_id = $2 AND friend_id = $1)`
+
+	_, err := q.db.ExecContext(ctx, sql, userId, friendId)
+
+	return err
+}

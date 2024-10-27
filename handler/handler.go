@@ -53,6 +53,7 @@ func (handler *Handler) setupRouter() {
 	// Friend Router
 	authRouter.POST("/friend", handler.createdFriend)
 	authRouter.GET("/friend", handler.getFriends)
+	authRouter.DELETE("/friend", handler.deleteFriend)
 
 	handler.Router = router
 }

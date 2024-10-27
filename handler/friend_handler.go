@@ -3,7 +3,6 @@ package handler
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,11 +35,21 @@ func (h *Handler) createdFriend(ctx *gin.Context) {
 	}
 
 	// 身份校验
-	auth := ctx.Request.Header.Get(authorizationHeader)
-	fields := strings.Fields(auth)
-	_, err := h.Token.VerifyToken(fields[1])
-	if err != nil {
-		Error(ctx, http.StatusBadRequest, err.Error())
+	// auth := ctx.Request.Header.Get(authorizationHeader)
+	// fields := strings.Fields(auth)
+	// payload, err := h.Token.VerifyToken(fields[1])
+	// if err != nil {
+	// 	Error(ctx, http.StatusBadRequest, err.Error())
+	// 	return
+	// }
+
+	// if payload.Username != h.CurrentUserInfo.Username {
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{"messagge": "权限不足"})
+	// 	return
+	// }
+	if req.FromUserId != h.CurrentUserInfo.ID {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"messagge": "权限不足",
+			"from_user_id": req.FromUserId, "id": h.CurrentUserInfo.ID})
 		return
 	}
 
@@ -91,4 +100,50 @@ func (h *Handler) getFriends(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, friends)
 
+}
+
+type deleteFriendRequest struct {
+	FromUserId uint32 `json:"from_user_id" binding:"required"`
+	ToUserId   uint32 `json:"to_user_id" binding:"required"`
+}
+
+func (h *Handler) deleteFriend(ctx *gin.Context) {
+	var req deleteFriendRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 无法删除自己
+	if req.FromUserId == req.ToUserId {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "无法删除自己"})
+		return
+	}
+
+	if req.FromUserId != h.CurrentUserInfo.ID {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"messagge": "权限不足",
+			"from_user_id": req.FromUserId, "id": h.CurrentUserInfo.ID})
+		return
+	}
+
+	// 判断要删除用户是否存在
+	if u, err := h.Queries.GetUserById(ctx, req.ToUserId); u.ID < 1 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": "用户不存在"})
+		return
+	}
+
+	// 判断是否是好友
+	if i := h.Queries.ExistsFriend(ctx, req.FromUserId, req.ToUserId, ACCEPTED); i < 1 {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "非好友无法删除"})
+		return
+	}
+
+	// 删除
+	err := h.Queries.DeleteFriend(ctx, req.FromUserId, req.ToUserId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "删除失败", "error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "successfully"})
 }
