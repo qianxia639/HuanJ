@@ -37,7 +37,7 @@ func NewHandler(conf config.Config, queries *db.Queries, rdb *redis.Client) *Han
 
 func (handler *Handler) setupRouter() {
 	router := gin.Default()
-
+	// \n\n\x1b[31m
 	router.Use(handler.CORS())
 
 	authRouter := router.Group("")

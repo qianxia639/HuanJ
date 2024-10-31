@@ -68,18 +68,20 @@ func (q *Queries) GetUserById(ctx context.Context, id uint32) (u model.User, err
 	return
 }
 
+// IS DISTINCT FROM：此语法用于比较两个值是否不同，即使其中一个值为 NULL，也能正确处理
+// 通过添加 AND 子句，避免在值未更改时执行更新操作，从而减少不必要的数据库写入
 func (q *Queries) UpdateUser(ctx context.Context, user model.User) error {
 
 	sql := `UPDATE users 
 			SET 
 				gender = $1, 
 				nickname = $2, 
-				updated_at = $3
-			WHERE id = $4`
+				updated_at = now()
+			WHERE id = $3
+			AND (gender IS DISTINCT FROM $1 OR nickname IS DISTINCT FROM $2)`
 	_, err := q.db.ExecContext(ctx, sql,
 		user.Gender,
 		user.Nickname,
-		user.UpdatedAt,
 		user.ID,
 	)
 

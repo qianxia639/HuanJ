@@ -20,6 +20,16 @@ type createUserRequest struct {
 	Gender        int8   `json:"gender" binding:"required"`
 }
 
+// 后续优化方案
+// 用户名，邮箱号，密码，验证码，性别
+type createUserRequest2 struct {
+	Username  string `json:"username" binding:"required"`
+	Password  string `json:"password" binding:"required"`
+	Email     string `json:"email" binding:"required,email"`
+	EmailCode string `json:"email_code" binding:"required"`
+	Gender    int8   `json:"gender" binding:"required"`
+}
+
 func (h *Handler) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -146,6 +156,8 @@ func (h *Handler) login(ctx *gin.Context) {
 
 func (h *Handler) getUser(ctx *gin.Context) {
 
+	h.CurrentUserInfo.Email = utils.DesnsitizeEmail(h.CurrentUserInfo.Email)
+
 	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": h.CurrentUserInfo})
 }
 
@@ -182,7 +194,7 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 		h.CurrentUserInfo.Gender = *req.Gender
 	}
 
-	h.CurrentUserInfo.UpdatedAt = time.Now()
+	// h.CurrentUserInfo.UpdatedAt = time.Now()
 
 	err = h.Queries.UpdateUser(ctx, h.CurrentUserInfo.User)
 	if err != nil {
@@ -191,6 +203,8 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 	}
 
 	_ = h.Redis.Set(ctx, fmt.Sprintf("t_%s", payload.Username), &h.CurrentUserInfo, 24*time.Hour)
+
+	h.CurrentUserInfo.Email = utils.DesnsitizeEmail(h.CurrentUserInfo.Email)
 
 	ctx.JSON(http.StatusOK, gin.H{"data": h.CurrentUserInfo})
 }
