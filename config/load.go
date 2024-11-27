@@ -1,6 +1,8 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 func LoadConfig(path string) (conf Config, err error) {
 	viper.AddConfigPath(path)

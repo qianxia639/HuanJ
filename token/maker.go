@@ -9,3 +9,5 @@ type Maker interface {
 	// 校验Token
 	VerifyToken(token string) (*Payload, error)
 }
+
+var _ Maker = (*PasetoMaker)(nil)
