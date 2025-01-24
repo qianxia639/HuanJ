@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Dandelion/db/model"
+	"Dandelion/internal/db/model"
 	"fmt"
 	"net/http"
 	"strings"

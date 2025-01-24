@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Dandelion/token"
+	"Dandelion/internal/token"
 	"fmt"
 	"net/http"
 	"net/http/httptest"

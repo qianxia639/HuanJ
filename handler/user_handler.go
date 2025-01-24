@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"Dandelion/db/model"
-	db "Dandelion/db/service"
-	"Dandelion/utils"
+	"Dandelion/internal/db/model"
+	db "Dandelion/internal/db/service"
+	"Dandelion/internal/utils"
 	"fmt"
 	"net/http"
 	"strings"
