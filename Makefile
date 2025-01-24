@@ -18,4 +18,7 @@ migratedownall:
 newmigrate:
 	migrate create -ext sql -dir db/migration -seq $(name)
 
-.PHONLY: server migrateup migratedown migrateupall migratedownall newmigrate
+git:
+	git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch internal/config/config.toml' --prune-empty --tag-name-filter cat -- --all
+
+.PHONLY: server migrateup migratedown migrateupall migratedownall newmigrate git
