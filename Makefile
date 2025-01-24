@@ -4,16 +4,16 @@ server:
 	go run main.go
 
 migrateup:
-	migrate -path db/migration -database "${DB_URL}" -verbose up 1
+	migrate -path internal/db/migration -database "${DB_URL}" -verbose up
 
 migratedown:
-	migrate -path db/migration -database "${DB_URL}" -verbose down 1
+	migrate -path internal/db/migration -database "${DB_URL}" -verbose down
 
 migrateupall:
-	migrate -path db/migration -database "${DB_URL}" -verbose up
+	migrate -path internal/db/migration -database "${DB_URL}" -verbose up 1
 
 migratedownall:
-	migrate -path db/migration -database "${DB_URL}" -verbose down
+	migrate -path internal/db/migration -database "${DB_URL}" -verbose down 1
 
 newmigrate:
 	migrate create -ext sql -dir db/migration -seq $(name)
