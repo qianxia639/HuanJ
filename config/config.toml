@@ -11,6 +11,7 @@ migrate_url = "file://db/migration"
 [token]
 token_symmetric_key = "plokmnjiuhbvgytfcxdreszawq564738"
 access_token_duration = "30m"
+refresh_token_duration = "720h"
 
 [redis]
 addr = "localhost:6379"

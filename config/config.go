@@ -33,8 +33,9 @@ func (p *Postgres) DatabaseUrl() string {
 }
 
 type Token struct {
-	TokenSymmetricKey   string        `mapstructure:"token_symmetric_key"`
-	AccessTokenDuration time.Duration `mapstructure:"access_token_duration"`
+	TokenSymmetricKey    string        `mapstructure:"token_symmetric_key"`
+	AccessTokenDuration  time.Duration `mapstructure:"access_token_duration"`
+	RefreshTokenDuration time.Duration `mapstructure:"refresh_token_duration"`
 }
 
 type Redis struct {
