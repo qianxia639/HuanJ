@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"Dandelion/config"
-	db "Dandelion/db/service"
-	"Dandelion/utils"
+	"Dandelion/internal/config"
+	db "Dandelion/internal/db/service"
+	"Dandelion/internal/utils"
 	"os"
 	"testing"
 	"time"

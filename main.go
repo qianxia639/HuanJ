@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Dandelion/config"
-	db "Dandelion/db/service"
 	"Dandelion/handler"
+	"Dandelion/internal/config"
+	db "Dandelion/internal/db/service"
 	"context"
 	"net/http"
 	"os"
@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"Dandelion/logs"
+	"Dandelion/internal/logs"
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
@@ -27,7 +27,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	conf, err := config.LoadConfig("config/.")
+	conf, err := config.LoadConfig("internal/config/.")
 	if err != nil {
 		logs.Fatalf("Load config file failed: %v", err)
 	}

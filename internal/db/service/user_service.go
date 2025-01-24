@@ -1,7 +1,7 @@
 package db
 
 import (
-	"Dandelion/db/model"
+	"Dandelion/internal/db/model"
 	"context"
 )
 

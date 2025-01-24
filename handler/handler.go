@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"Dandelion/config"
-	"Dandelion/db/model"
-	db "Dandelion/db/service"
-	"Dandelion/token"
+	"Dandelion/internal/config"
+	"Dandelion/internal/db/model"
+	db "Dandelion/internal/db/service"
+	"Dandelion/internal/token"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
