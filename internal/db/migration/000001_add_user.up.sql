@@ -4,13 +4,12 @@ CREATE TABLE IF NOT EXISTS "users" (
     "username" VARCHAR(20) UNIQUE NOT NULL,
     "nickname" VARCHAR(60) UNIQUE NOT NULL,
     "password" VARCHAR NOT NULL,
-    "salt" VARCHAR NOT NULL,
     "email" VARCHAR(64) UNIQUE NOT NULL,
     "gender" SMALLINT NOT NULL DEFAULT 3,
     "avatar" VARCHAR NOT NULL DEFAULT 'default.jpg',
-    "password_changed_at" TIMESTAMP NOT NULL DEFAULT '0001-01-01 00:00:00',
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "password_changed_at" TIMESTAMP WITH TIME ZONE DEFAULT '0001-01-01 00:00:00',
+    "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON COLUMN "users"."id" IS '用户ID';
@@ -20,8 +19,6 @@ COMMENT ON COLUMN "users"."username" IS '用户名';
 COMMENT ON COLUMN "users"."nickname" IS '用户昵称';
 
 COMMENT ON COLUMN "users"."password" IS '用户密码';
-
-COMMENT ON COLUMN "users"."salt" IS '随机盐';
 
 COMMENT ON COLUMN "users"."email" IS '用户邮箱';
 

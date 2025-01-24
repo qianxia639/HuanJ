@@ -71,8 +71,7 @@ func (h *Handler) createUser(ctx *gin.Context) {
 	// 判断邮箱是否存在
 
 	// 密码加密
-	salt := utils.GenerateSalt()
-	hashPwd, err := utils.HashPassword(req.Password, salt)
+	hashPwd, err := utils.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Encoding password faild", "error": err.Error()})
 		return
@@ -83,7 +82,6 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		Username: req.Username,
 		Nickname: req.Username,
 		Password: hashPwd,
-		Salt:     salt,
 		Email:    req.Email,
 		Gender:   req.Gender,
 	}
@@ -125,7 +123,7 @@ func (h *Handler) login(ctx *gin.Context) {
 		return
 	}
 	// 校验密码
-	err = utils.ComparePassword(req.Password, user.Password, user.Salt)
+	err = utils.ComparePassword(req.Password, user.Password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return

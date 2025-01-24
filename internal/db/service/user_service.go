@@ -9,7 +9,6 @@ type CreateUserParams struct {
 	Username string `json:"username"`
 	Nickname string `json:"nickname"`
 	Password string `json:"password"`
-	Salt     string `json:"salt"`
 	Email    string `json:"email"`
 	Gender   int8   `json:"gender"`
 }
@@ -18,7 +17,7 @@ func (q *Queries) CreateUser(ctx context.Context, args *CreateUserParams) error 
 
 	sql := `
 	INSERT INTO users (
-		username, nickname, password, salt, email, gender
+		username, nickname, password, email, gender
 	) VALUES (
 		$1, $2, $3, $4,$5, $6
 	)`
@@ -27,7 +26,6 @@ func (q *Queries) CreateUser(ctx context.Context, args *CreateUserParams) error 
 		args.Username,
 		args.Nickname,
 		args.Password,
-		args.Salt,
 		args.Email,
 		args.Gender,
 	)

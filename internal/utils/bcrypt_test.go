@@ -11,20 +11,19 @@ import (
 
 func TestBcrypt(t *testing.T) {
 	password := fmt.Sprintf("%06d", time.Now().Local().UnixNano())
-	salt := GenerateSalt()
 
-	hashPwd, err := HashPassword(password, salt)
+	hashPwd, err := HashPassword(password)
 	require.NoError(t, err)
 	require.NotEmpty(t, hashPwd)
 
-	err = ComparePassword(password, hashPwd, salt)
+	err = ComparePassword(password, hashPwd)
 	require.NoError(t, err)
 
 	wrongPwd := fmt.Sprintf("%06d", time.Now().Local().UnixNano())
-	err = ComparePassword(wrongPwd, hashPwd, salt)
+	err = ComparePassword(wrongPwd, hashPwd)
 	require.EqualError(t, err, bcrypt.ErrMismatchedHashAndPassword.Error())
 
-	hashPwd2, err := HashPassword(password, salt)
+	hashPwd2, err := HashPassword(password)
 	require.NoError(t, err)
 	require.NotEmpty(t, hashPwd2)
 	require.NotEqual(t, hashPwd, hashPwd2)
