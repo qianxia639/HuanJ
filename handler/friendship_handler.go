@@ -78,7 +78,7 @@ func (h *Handler) createdFriend(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.Queries.AddFriendRecord(ctx, req.FromUserId, req.ToUserId); err != nil {
+	if err := h.Queries.AddFriendRequest(ctx, req.FromUserId, req.ToUserId, ""); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

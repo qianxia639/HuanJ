@@ -1,9 +1,9 @@
 package main
 
 import (
+	db "Dandelion/db/service"
 	"Dandelion/handler"
 	"Dandelion/internal/config"
-	db "Dandelion/internal/db/service"
 	"context"
 	"net/http"
 	"os"

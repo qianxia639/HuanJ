@@ -1,7 +1,7 @@
 package db
 
 import (
-	"Dandelion/internal/db/model"
+	"Dandelion/db/model"
 	"context"
 )
 
@@ -19,7 +19,7 @@ func (q *Queries) CreateUser(ctx context.Context, args *CreateUserParams) error 
 	INSERT INTO users (
 		username, nickname, password, email, gender
 	) VALUES (
-		$1, $2, $3, $4,$5, $6
+		$1, $2, $3, $4, $5
 	)`
 
 	row := q.db.QueryRowContext(ctx, sql,

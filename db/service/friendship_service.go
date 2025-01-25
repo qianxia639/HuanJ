@@ -1,23 +1,23 @@
 package db
 
 import (
-	"Dandelion/internal/db/model"
+	"Dandelion/db/model"
+	"Dandelion/internal/logs"
 	"context"
-	"log"
 )
 
-func (q *Queries) AddFriendRecord(ctx context.Context, userId, friendId uint32) error {
+// func (q *Queries) AddFriendRecord(ctx context.Context, userId, friendId uint32) error {
 
-	sql := `INSERT INTO friendships (user_id, friend_id) VALUES ($1, $2)`
+// 	sql := `INSERT INTO friendships (user_id, friend_id) VALUES ($1, $2)`
 
-	return q.db.QueryRowContext(ctx, sql, userId, friendId).Err()
+// 	return q.db.QueryRowContext(ctx, sql, userId, friendId).Err()
 
-}
+// }
 
 func (q *Queries) AddFriendTx(ctx context.Context, userId, friendId uint32) error {
 	tx, err := q.db.BeginTxx(ctx, nil)
 	if err != nil {
-		log.Printf("AddFriend: begin transaction error: %v", err.Error())
+		logs.Errorf("AddFriend: begin transaction error: %v", err.Error())
 		return err
 	}
 
@@ -25,11 +25,11 @@ func (q *Queries) AddFriendTx(ctx context.Context, userId, friendId uint32) erro
 	sql2 := `INSERT INTO friendships (user_id, friend_id, status) VALUES ($1, $2, $3)`
 
 	if _, err := tx.ExecContext(ctx, sql1, friendId, userId); err != nil {
-		log.Printf("AddFriend: sql1 error: %v", err.Error())
+		logs.Errorf("AddFriend: sql1 error: %v", err.Error())
 		return tx.Rollback()
 	}
 	if _, err := tx.ExecContext(ctx, sql2, userId, friendId, 2); err != nil {
-		log.Printf("AddFriend: sql2 error: %v", err.Error())
+		logs.Errorf("AddFriend: sql2 error: %v", err.Error())
 		return tx.Rollback()
 	}
 

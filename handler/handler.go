@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"Dandelion/db/model"
+	db "Dandelion/db/service"
 	"Dandelion/internal/config"
-	"Dandelion/internal/db/model"
-	db "Dandelion/internal/db/service"
 	"Dandelion/internal/token"
 
 	"github.com/gin-gonic/gin"
@@ -49,6 +49,11 @@ func (handler *Handler) setupRouter() {
 
 	authRouter.GET("/user", handler.getUser)
 	authRouter.PUT("/user", handler.updateUser)
+
+	// Friend Request Router
+	authRouter.POST("/friend/request", handler.createFriendRequest)
+	authRouter.POST("/friend/request/accept", handler.acceptFriendRequest)
+	authRouter.POST("/friend/request/reject", handler.rejectFriendRequest)
 
 	// Friend Router
 	authRouter.POST("/friend", handler.createdFriend)

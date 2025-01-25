@@ -9,6 +9,8 @@ var Gender = map[int8]struct{}{
 
 // 申请状态
 const (
-	PENDING  = iota + 1 // 待确认
-	ACCEPTED            // 已确认
+	PENDING  int8 = iota + 1 // 待处理
+	ACCEPTED                 // 已同意
+	REJECTED                 // 已拒绝
+	IGNORED                  // 已忽略
 )

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Dandelion/internal/db/model"
+	"Dandelion/db/model"
 	"fmt"
 	"net/http"
 	"strings"
@@ -42,7 +42,7 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 		}
 
 		var loginUserInfo model.LoginUserInfo
-		err = h.Redis.Get(ctx, fmt.Sprintf("t_%s", payload.Username)).Scan(&loginUserInfo)
+		err = h.Redis.Get(ctx, fmt.Sprintf("user:%s", payload.Username)).Scan(&loginUserInfo)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
