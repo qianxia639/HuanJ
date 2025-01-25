@@ -140,7 +140,7 @@ func (h *Handler) login(ctx *gin.Context) {
 		UserAgent: ua,
 		LoginIp:   ctx.ClientIP(),
 	}
-	key := fmt.Sprintf("t_%s", user.Username)
+	key := fmt.Sprintf("user:%s", user.Username)
 	err = h.Redis.Set(ctx, key, &loginUserInfo, 24*time.Hour).Err()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -200,7 +200,7 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 		return
 	}
 
-	_ = h.Redis.Set(ctx, fmt.Sprintf("t_%s", payload.Username), &h.CurrentUserInfo, 24*time.Hour)
+	_ = h.Redis.Set(ctx, fmt.Sprintf("user:%s", payload.Username), &h.CurrentUserInfo, 24*time.Hour)
 
 	h.CurrentUserInfo.Email = utils.DesnsitizeEmail(h.CurrentUserInfo.Email)
 

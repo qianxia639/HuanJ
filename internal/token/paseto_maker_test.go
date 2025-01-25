@@ -1,7 +1,7 @@
 package token
 
 import (
-	"Dandelion/utils"
+	"Dandelion/internal/utils"
 	"testing"
 	"time"
 
