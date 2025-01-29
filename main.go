@@ -27,10 +27,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	conf, err := config.LoadConfig("internal/config/.")
-	if err != nil {
-		logs.Fatalf("Load config file failed: %v", err)
-	}
+	conf := config.LoadConfig("internal/config/.")
 
 	dbConnect, err := sqlx.Connect(conf.Postgres.Driver, conf.Postgres.DatabaseSource())
 	if err != nil {
@@ -45,10 +42,10 @@ func main() {
 
 	queries := db.NewQueries(dbConnect)
 
-	router := handler.NewHandler(conf, queries, rdb)
+	router := handler.NewHandler(*conf, queries, rdb)
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    conf.Http.Address(),
 		Handler: router.Router,
 	}
 

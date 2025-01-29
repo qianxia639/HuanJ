@@ -7,7 +7,15 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	conf, err := LoadConfig(".")
-	require.NoError(t, err)
+	conf := LoadConfig(".")
+
 	require.NotEmpty(t, conf)
+}
+
+func TestSingletonPattern(t *testing.T) {
+	firstConf := LoadConfig(".")
+
+	secondConf := LoadConfig(".")
+
+	require.Equal(t, firstConf, secondConf)
 }

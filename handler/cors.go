@@ -9,7 +9,7 @@ import (
 // 跨域
 func (h *Handler) CORS() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ctx.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+		ctx.Writer.Header().Set("Access-Control-Allow-Origin", "http://"+h.Conf.Http.Address())
 		ctx.Writer.Header().Set("Access-Control-Max-Age", "86400")
 		ctx.Writer.Header().Set("Access-Control-Allow-Methods", "POST,GET,PUT,DELETE,OPTIONS")
 		ctx.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type,X-CSRF-Token,Authorization")

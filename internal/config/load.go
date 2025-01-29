@@ -1,22 +1,35 @@
 package config
 
 import (
+	"Dandelion/internal/logs"
+	"sync"
+
 	"github.com/spf13/viper"
 )
 
-func LoadConfig(path string) (conf Config, err error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("config")
-	viper.SetConfigType("toml")
+var instance *Config
+var once sync.Once
 
-	viper.AutomaticEnv()
+func LoadConfig(path string) *Config {
+	once.Do(func() {
+		viper.AddConfigPath(path)
+		viper.SetConfigName("config")
+		viper.SetConfigType("toml")
 
-	err = viper.ReadInConfig()
-	if err != nil {
-		return
-	}
+		viper.AutomaticEnv()
 
-	err = viper.Unmarshal(&conf)
+		err := viper.ReadInConfig()
+		if err != nil {
+			logs.Fatalf("Failed to read config file: %v", err)
+		}
 
-	return
+		var conf Config
+		if err := viper.Unmarshal(&conf); err != nil {
+			logs.Fatalf("Failed to unmarshal config data: %v", err)
+		}
+
+		instance = &conf
+	})
+
+	return instance
 }
