@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Dandelion/internal/logs"
+	"Ice/internal/logs"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

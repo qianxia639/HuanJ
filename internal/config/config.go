@@ -6,10 +6,10 @@ import (
 )
 
 type Config struct {
-	Http        Http
-	Postgres    Postgres
-	Token       Token
-	RedisClient Redis
+	Http     Http     `mapstructure:"http"`
+	Postgres Postgres `mapstructure:"postgres"`
+	Token    Token    `mapstructure:"token"`
+	Redis    Redis    `mapstructure:"redis"`
 }
 
 type Http struct {
@@ -49,5 +49,10 @@ type Token struct {
 }
 
 type Redis struct {
-	Addr string `mapstructure:"addr"`
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
+}
+
+func (r *Redis) Address() string {
+	return fmt.Sprintf("%s:%d", r.Host, r.Port)
 }

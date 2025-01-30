@@ -1,7 +1,7 @@
 package db
 
 import (
-	"Dandelion/db/model"
+	"Ice/db/model"
 	"context"
 )
 

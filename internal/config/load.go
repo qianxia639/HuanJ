@@ -1,7 +1,7 @@
 package config
 
 import (
-	"Dandelion/internal/logs"
+	"Ice/internal/logs"
 	"sync"
 
 	"github.com/spf13/viper"

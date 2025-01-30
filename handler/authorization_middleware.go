@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Dandelion/db/model"
+	"Ice/db/model"
 	"fmt"
 	"net/http"
 	"strings"

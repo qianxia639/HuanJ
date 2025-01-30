@@ -1,9 +1,9 @@
 package main
 
 import (
-	db "Dandelion/db/service"
-	"Dandelion/handler"
-	"Dandelion/internal/config"
+	db "Ice/db/service"
+	"Ice/handler"
+	"Ice/internal/config"
 	"context"
 	"net/http"
 	"os"
@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"Dandelion/internal/logs"
+	"Ice/internal/logs"
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
@@ -35,7 +35,7 @@ func main() {
 	}
 	defer dbConnect.Close()
 
-	rdb := initRedisClient(conf.RedisClient.Addr)
+	rdb := initRedisClient(conf.Redis.Address())
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		logs.Fatalf("Connect Redis error: %v", err)
 	}

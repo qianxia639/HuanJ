@@ -1,8 +1,8 @@
 package db
 
 import (
-	"Dandelion/db/model"
-	"Dandelion/internal/logs"
+	"Ice/db/model"
+	"Ice/internal/logs"
 	"context"
 )
 
