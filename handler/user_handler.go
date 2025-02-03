@@ -17,6 +17,7 @@ type createUserRequest struct {
 	Password      string `json:"password" binding:"required"`
 	CheckPassword string `json:"check_password" binding:"required"`
 	Email         string `json:"email" binding:"required,email"`
+	Answer        string `json:"answer" binding:"required"`
 	Gender        int8   `json:"gender" binding:"required"`
 }
 
@@ -63,17 +64,27 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		return
 	}
 	// 判断用户名是否存在
-	if i := h.Queries.ExistsUser(ctx, req.Username, req.Email); i > 0 {
+	if i := h.Queries.ExistsUser(ctx, req.Username); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名已存在"})
 		return
 	}
 
+	if ANSWER != req.Answer {
+		Error(ctx, http.StatusBadRequest, "验证失败")
+		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "验证失败"})
+		return
+	}
+
 	// 判断邮箱是否存在
+	if i := h.Queries.ExistsEmail(ctx, req.Email); i > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已存在"})
+		return
+	}
 
 	// 密码加密
 	hashPwd, err := utils.HashPassword(req.Password)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Encoding password faild", "error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 	// 创建用户

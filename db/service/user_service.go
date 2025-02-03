@@ -32,11 +32,20 @@ func (q *Queries) CreateUser(ctx context.Context, args *CreateUserParams) error 
 	return row.Err()
 }
 
-func (q *Queries) ExistsUser(ctx context.Context, username, email string) int8 {
-	sql := `SELECT COUNT(*) FROM users WHERE username = $1 OR email = $2`
+func (q *Queries) ExistsUser(ctx context.Context, username string) int8 {
+	sql := `SELECT COUNT(*) FROM users WHERE username = $1`
 
 	var count int8
-	_ = q.db.GetContext(ctx, &count, sql, username, email)
+	_ = q.db.GetContext(ctx, &count, sql, username)
+
+	return count
+}
+
+func (q *Queries) ExistsEmail(ctx context.Context, email string) int8 {
+	sql := `SELECT COUNT(*) FROM users WHERE email = $2`
+
+	var count int8
+	_ = q.db.GetContext(ctx, &count, sql, email)
 
 	return count
 }

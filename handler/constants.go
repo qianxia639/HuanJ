@@ -1,5 +1,8 @@
 package handler
 
+// 人机校验
+const ANSWER = "Ice"
+
 // 性别
 var Gender = map[int8]struct{}{
 	1: {}, // 男
