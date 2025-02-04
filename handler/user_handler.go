@@ -84,7 +84,18 @@ func (h *Handler) createUser(ctx *gin.Context) {
 
 	// 判断邀请码
 	// 1.邀请码是否存在
-	// 2.邀请码是否已使用或已过期
+	// TODO: Scan error on column index 2, name "user_id": converting NULL to uint32 is unsupported
+	ic := h.Queries.GetCode(ctx, req.InvitationCode)
+	fmt.Printf("ic: %v\n", ic)
+	if len(ic.Code) == 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid invitation code"})
+		return
+	}
+	// 2.邀请码是否已使用或过期
+	if ic.Status == USED || ic.ExpiredAt.After(ic.CreatedAt.Add(24*time.Hour)) {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "邀请码已使用或已过期"})
+		return
+	}
 
 	// 密码加密
 	hashPwd, err := utils.HashPassword(req.Password)
