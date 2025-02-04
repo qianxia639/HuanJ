@@ -17,3 +17,10 @@ const (
 	REJECTED                 // 已拒绝
 	IGNORED                  // 已忽略
 )
+
+// 邀请码
+const (
+	UNUSED  = -1 // 未使用
+	USED    = 1  // 已使用
+	EXPIRED = -2 // 已过期
+)

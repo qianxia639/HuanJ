@@ -13,12 +13,13 @@ import (
 )
 
 type createUserRequest struct {
-	Username      string `json:"username" binding:"required"`
-	Password      string `json:"password" binding:"required"`
-	CheckPassword string `json:"check_password" binding:"required"`
-	Email         string `json:"email" binding:"required,email"`
-	Answer        string `json:"answer" binding:"required"`
-	Gender        int8   `json:"gender" binding:"required"`
+	Username       string `json:"username" binding:"required"`
+	Password       string `json:"password" binding:"required"`
+	CheckPassword  string `json:"check_password" binding:"required"`
+	Email          string `json:"email" binding:"required,email"`
+	Answer         string `json:"answer" binding:"required"`
+	Gender         int8   `json:"gender" binding:"required"`
+	InvitationCode string `json:"invitation_code" binding:"required"`
 }
 
 // 后续优化方案
@@ -81,14 +82,18 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		return
 	}
 
+	// 判断邀请码
+	// 1.邀请码是否存在
+	// 2.邀请码是否已使用或已过期
+
 	// 密码加密
 	hashPwd, err := utils.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-	// 创建用户
 
+	// 创建用户
 	args := &db.CreateUserParams{
 		Username: req.Username,
 		Nickname: req.Username,
