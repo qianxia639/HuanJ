@@ -67,7 +67,7 @@ func (q *Queries) GetUser(ctx context.Context, username string) (u model.User, e
 	return
 }
 
-func (q *Queries) GetUserById(ctx context.Context, id uint32) (u model.User, err error) {
+func (q *Queries) GetUserById(ctx context.Context, id int32) (u model.User, err error) {
 
 	sql := `SELECT * FROM users WHERE id = $1 LIMIT 1`
 	err = q.db.GetContext(ctx, &u, sql, id)

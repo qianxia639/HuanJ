@@ -8,8 +8,8 @@ import (
 )
 
 type createdFriendRequest struct {
-	FromUserId  uint32 `json:"from_user_id" binding:"required"` // 申请者Id
-	ToUserId    uint32 `json:"to_user_id" binding:"required"`   // 接收者Id
+	FromUserId  int32  `json:"from_user_id" binding:"required"` // 申请者Id
+	ToUserId    int32  `json:"to_user_id" binding:"required"`   // 接收者Id
 	Description string `json:"description" binding:"required"`  // 申请描述
 }
 
@@ -96,15 +96,15 @@ func (h *Handler) getFriends(ctx *gin.Context) {
 		return
 	}
 
-	friends, _ := h.Queries.GetFriendAll(ctx, uint32(userId))
+	friends, _ := h.Queries.GetFriendAll(ctx, int32(userId))
 
 	ctx.JSON(http.StatusOK, friends)
 
 }
 
 type deleteFriendRequest struct {
-	FromUserId uint32 `json:"from_user_id" binding:"required"`
-	ToUserId   uint32 `json:"to_user_id" binding:"required"`
+	FromUserId int32 `json:"from_user_id" binding:"required"`
+	ToUserId   int32 `json:"to_user_id" binding:"required"`
 }
 
 func (h *Handler) deleteFriend(ctx *gin.Context) {

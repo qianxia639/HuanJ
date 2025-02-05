@@ -14,7 +14,7 @@ import (
 
 // }
 
-func (q *Queries) AddFriendTx(ctx context.Context, userId, friendId uint32) error {
+func (q *Queries) AddFriendTx(ctx context.Context, userId, friendId int32) error {
 	tx, err := q.db.BeginTxx(ctx, nil)
 	if err != nil {
 		logs.Errorf("AddFriend: begin transaction error: %v", err.Error())
@@ -37,7 +37,7 @@ func (q *Queries) AddFriendTx(ctx context.Context, userId, friendId uint32) erro
 
 }
 
-func (q *Queries) ExistsFriend(ctx context.Context, userId, friendId uint32, status int8) int8 {
+func (q *Queries) ExistsFriend(ctx context.Context, userId, friendId int32, status int8) int8 {
 
 	sql := `SELECT COUNT(*) FROM friendships WHERE user_id = $1 AND friend_id = $2 AND status = $3`
 
@@ -47,7 +47,7 @@ func (q *Queries) ExistsFriend(ctx context.Context, userId, friendId uint32, sta
 	return count
 }
 
-func (q *Queries) GetFriend(ctx context.Context, userId, friendId uint32) (*model.Friendship, error) {
+func (q *Queries) GetFriend(ctx context.Context, userId, friendId int32) (*model.Friendship, error) {
 
 	sql := `SELECT * FROM friendships WHERE user_id = $1 AND friend_id = $2 AND status != 3`
 
@@ -58,7 +58,7 @@ func (q *Queries) GetFriend(ctx context.Context, userId, friendId uint32) (*mode
 
 }
 
-func (q *Queries) GetFriendAll(ctx context.Context, userId uint32) ([]model.Friendship, error) {
+func (q *Queries) GetFriendAll(ctx context.Context, userId int32) ([]model.Friendship, error) {
 
 	sql := `SELECT * FROM friendships WHERE user_id = $1 AND status = 1`
 
@@ -68,7 +68,7 @@ func (q *Queries) GetFriendAll(ctx context.Context, userId uint32) ([]model.Frie
 	return friends, err
 }
 
-func (q *Queries) DeleteFriend(ctx context.Context, userId, friendId uint32) error {
+func (q *Queries) DeleteFriend(ctx context.Context, userId, friendId int32) error {
 
 	sql := `DELETE FROM friendships WHERE (user_id = $1 AND friend_id = $2) 
 								OR (user_id = $2 AND friend_id = $1)`

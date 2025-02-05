@@ -9,7 +9,7 @@ import (
 
 type createFriendRecordRequest struct {
 	// FromUserId  uint32 `json:"from_user_id" binding:"required"`
-	ToUserId    uint32 `json:"to_user_id" binding:"required"`
+	ToUserId    int32  `json:"to_user_id" binding:"required"`
 	RequestDesc string `json:"request_desc" binding:"required"`
 }
 
@@ -41,7 +41,7 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 }
 
 type acceptFriendRequest struct {
-	Id uint32 `json:"id" binding:"required"`
+	Id int32 `json:"id" binding:"required"`
 }
 
 func (handler *Handler) acceptFriendRequest(ctx *gin.Context) {

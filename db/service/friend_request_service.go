@@ -6,7 +6,7 @@ import (
 	"context"
 )
 
-func (q *Queries) AddFriendRequest(ctx context.Context, fromUserId, toUserId uint32, requestDesc string) error {
+func (q *Queries) AddFriendRequest(ctx context.Context, fromUserId, toUserId int32, requestDesc string) error {
 
 	sql := `INSERT INTO friend_requests (from_user_id, to_user_id, request_desc) VALUES ($1, $2, $3)`
 
@@ -14,7 +14,7 @@ func (q *Queries) AddFriendRequest(ctx context.Context, fromUserId, toUserId uin
 
 }
 
-func (q *Queries) ExistsFriendRecord(ctx context.Context, fromUserId, toUserId uint32) int8 {
+func (q *Queries) ExistsFriendRecord(ctx context.Context, fromUserId, toUserId int32) int8 {
 
 	sql := `SELECT COUNT(*) FROM friend_requests WHERE (from_user_id = $1 AND to_user_id = $2 AND status = 1)`
 
@@ -27,7 +27,7 @@ func (q *Queries) ExistsFriendRecord(ctx context.Context, fromUserId, toUserId u
 	return count
 }
 
-func (q *Queries) ExistsFriendRequest(ctx context.Context, requestId uint32) int8 {
+func (q *Queries) ExistsFriendRequest(ctx context.Context, requestId int32) int8 {
 
 	sql := `SELECT COUNT(*) FROM friend_requests WHERE (id = $1 AND status = 1)`
 
@@ -40,7 +40,7 @@ func (q *Queries) ExistsFriendRequest(ctx context.Context, requestId uint32) int
 	return count
 }
 
-func (q *Queries) GetFriendRequest(ctx context.Context, requestId, status uint32) (*model.FriendRequest, error) {
+func (q *Queries) GetFriendRequest(ctx context.Context, requestId, status int32) (*model.FriendRequest, error) {
 	sql := `SELECT * FROM friend_requests WHERE id = $1 AND status = $2 LIMIT 1`
 
 	var fr model.FriendRequest
@@ -52,7 +52,7 @@ func (q *Queries) GetFriendRequest(ctx context.Context, requestId, status uint32
 	return &fr, nil
 }
 
-func (q *Queries) InsertAcceptFriendRequestTx(ctx context.Context, requestId, fromUserId, toUserId uint32) error {
+func (q *Queries) InsertAcceptFriendRequestTx(ctx context.Context, requestId, fromUserId, toUserId int32) error {
 
 	sql1 := `UPDATE friend_requests SET status = 2, changed_at = now() WHERE id = $1 AND status = 1`
 	sql2 := `INSERT INTO friendships (user_id, friend_id) VALUES ($1, $2)`
@@ -82,7 +82,7 @@ func (q *Queries) InsertAcceptFriendRequestTx(ctx context.Context, requestId, fr
 
 }
 
-func (q *Queries) UpdateFriendRequest(ctx context.Context, requestId uint32) error {
+func (q *Queries) UpdateFriendRequest(ctx context.Context, requestId int32) error {
 
 	sql := `UPDATE friend_requests SET status = 4, changed_at = now() WHERE id = $1 AND status = 1`
 

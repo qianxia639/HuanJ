@@ -6,8 +6,8 @@ import (
 )
 
 type Friendship struct {
-	UserId    uint32    `db:"user_id" json:"user_id,omitempty"`        // 用户ID
-	FriendId  uint32    `db:"friend_id" json:"friend_id,omitempty"`    // 好友的用户ID
+	UserId    int32     `db:"user_id" json:"user_id,omitempty"`        // 用户ID
+	FriendId  int32     `db:"friend_id" json:"friend_id,omitempty"`    // 好友的用户ID
 	CreatedAt time.Time `db:"created_at" json:"accepted_at,omitempty"` // 创建时间
 }
 

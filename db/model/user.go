@@ -6,7 +6,7 @@ import (
 )
 
 type User struct {
-	ID                uint32    `db:"id" json:"id,omitempty"`                                   // 用户Id
+	ID                int32     `db:"id" json:"id,omitempty"`                                   // 用户Id
 	Username          string    `db:"username" json:"username,omitempty"`                       // 用户名
 	Nickname          string    `db:"nickname" json:"nickname,omitempty"`                       // 用户昵称
 	Password          string    `db:"password" json:"-"`                                        // 用户密码
