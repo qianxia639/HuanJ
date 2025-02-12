@@ -13,13 +13,12 @@ import (
 )
 
 type createUserRequest struct {
-	Username       string `json:"username" binding:"required"`
-	Password       string `json:"password" binding:"required"`
-	CheckPassword  string `json:"check_password" binding:"required"`
-	Email          string `json:"email" binding:"required,email"`
-	Answer         string `json:"answer" binding:"required"`
-	Gender         int8   `json:"gender" binding:"required"`
-	InvitationCode string `json:"invitation_code" binding:"required"`
+	Username      string `json:"username" binding:"required"`
+	Password      string `json:"password" binding:"required"`
+	CheckPassword string `json:"check_password" binding:"required"`
+	Email         string `json:"email" binding:"required,email"`
+	Answer        string `json:"answer" binding:"required"`
+	Gender        int8   `json:"gender" binding:"required"`
 }
 
 // 后续优化方案
@@ -79,21 +78,6 @@ func (h *Handler) createUser(ctx *gin.Context) {
 	// 判断邮箱是否存在
 	if i := h.Queries.ExistsEmail(ctx, req.Email); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已存在"})
-		return
-	}
-
-	// 判断邀请码
-	// 1.邀请码是否存在
-	// TODO: Scan error on column index 2, name "user_id": converting NULL to uint32 is unsupported
-	ic := h.Queries.GetCode(ctx, req.InvitationCode)
-	fmt.Printf("ic: %v\n", ic)
-	if len(ic.Code) == 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid invitation code"})
-		return
-	}
-	// 2.邀请码是否已使用或过期
-	if ic.Status == USED || ic.ExpiredAt.After(ic.CreatedAt.Add(24*time.Hour)) {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "邀请码已使用或已过期"})
 		return
 	}
 
