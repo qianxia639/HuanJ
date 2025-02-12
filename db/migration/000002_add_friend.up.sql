@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS "friend_requests" (
     "request_desc" VARCHAR(100) NOT NULL,
     "status" SMALLINT NOT NULL DEFAULT 1,
     "requested_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "changed_at" TIMESTAMP NOT NULL DEFAULT '0001-01-01 00:00:00',
+    "updated_at" TIMESTAMP NOT NULL DEFAULT '0001-01-01 00:00:00',
     CONSTRAINT "friend_requests_from_user_id_fk" FOREIGN KEY (from_user_id) REFERENCES users (id),
     CONSTRAINT "friend_requests_to_user_id_fk" FOREIGN KEY (to_user_id) REFERENCES users (id)
 );
@@ -39,4 +39,4 @@ COMMENT ON COLUMN "friend_requests"."status" IS '请求状态, 1: 待处理, 2: 
 
 COMMENT ON COLUMN "friend_requests"."requested_at" IS '请求时间';
 
-COMMENT ON COLUMN "friend_requests"."changed_at" IS '变更时间';
+COMMENT ON COLUMN "friend_requests"."updated_at" IS '变更时间';

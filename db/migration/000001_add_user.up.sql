@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     "password" VARCHAR NOT NULL,
     "email" VARCHAR(64) UNIQUE NOT NULL,
     "gender" SMALLINT NOT NULL DEFAULT 3,
-    "avatar" VARCHAR NOT NULL DEFAULT 'default.jpg',
+    "avatar_url" VARCHAR(512),
     "password_changed_at" TIMESTAMP WITH TIME ZONE DEFAULT '0001-01-01 00:00:00',
     "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -24,7 +24,7 @@ COMMENT ON COLUMN "users"."email" IS '用户邮箱';
 
 COMMENT ON COLUMN "users"."gender" IS '用户性别, 1:男, 2:女, 3: 未知';
 
-COMMENT ON COLUMN "users"."avatar" IS '用户头像';
+COMMENT ON COLUMN "users"."avatar_url" IS '头像URL';
 
 COMMENT ON COLUMN "users"."password_changed_at" IS '上次密码更新时间';
 

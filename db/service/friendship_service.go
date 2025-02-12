@@ -14,6 +14,18 @@ import (
 
 // }
 
+func (q *Queries) CheckFriendship(ctx context.Context, userId, friendId int32) int8 {
+
+	sql := `SELECT * FROM friendships WHERE user_id = $1 AND friend_id = $2 AND status = 2`
+	var count int8
+	err := q.db.GetContext(ctx, &count, sql, userId, friendId)
+	if err != nil {
+		logs.Errorf("CheckFriendship: %v\n", err.Error())
+	}
+
+	return count
+}
+
 func (q *Queries) AddFriendTx(ctx context.Context, userId, friendId int32) error {
 	tx, err := q.db.BeginTxx(ctx, nil)
 	if err != nil {

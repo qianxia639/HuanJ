@@ -21,16 +21,6 @@ type createUserRequest struct {
 	Gender        int8   `json:"gender" binding:"required"`
 }
 
-// 后续优化方案
-// 用户名，邮箱号，密码，验证码，性别
-type createUserRequest2 struct {
-	Username  string `json:"username" binding:"required"`
-	Password  string `json:"password" binding:"required"`
-	Email     string `json:"email" binding:"required,email"`
-	EmailCode string `json:"email_code" binding:"required"`
-	Gender    int8   `json:"gender" binding:"required"`
-}
-
 func (h *Handler) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

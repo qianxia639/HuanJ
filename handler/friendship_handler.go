@@ -102,44 +102,35 @@ func (h *Handler) getFriends(ctx *gin.Context) {
 
 }
 
-type deleteFriendRequest struct {
-	FromUserId int32 `json:"from_user_id" binding:"required"`
-	ToUserId   int32 `json:"to_user_id" binding:"required"`
-}
-
 func (h *Handler) deleteFriend(ctx *gin.Context) {
-	var req deleteFriendRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+	userId := h.CurrentUserInfo.ID
+	friendId, err := strconv.ParseInt(ctx.Param("friend_id"), 10, 32)
+	if err != nil {
+		Error(ctx, http.StatusOK, "Invalid param")
 		return
 	}
 
 	// 无法删除自己
-	if req.FromUserId == req.ToUserId {
+	if userId == int32(friendId) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "无法删除自己"})
 		return
 	}
 
-	if req.FromUserId != h.CurrentUserInfo.ID {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"messagge": "权限不足",
-			"from_user_id": req.FromUserId, "id": h.CurrentUserInfo.ID})
-		return
-	}
-
 	// 判断要删除用户是否存在
-	if u, err := h.Queries.GetUserById(ctx, req.ToUserId); u.ID < 1 {
+	if u, err := h.Queries.GetUserById(ctx, int32(friendId)); u.ID < 1 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "message": "用户不存在"})
 		return
 	}
 
 	// 判断是否是好友
-	if i := h.Queries.ExistsFriend(ctx, req.FromUserId, req.ToUserId, ACCEPTED); i < 1 {
+	if i := h.Queries.ExistsFriend(ctx, userId, int32(friendId), ACCEPTED); i < 1 {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "非好友无法删除"})
 		return
 	}
 
 	// 删除
-	err := h.Queries.DeleteFriend(ctx, req.FromUserId, req.ToUserId)
+	err = h.Queries.DeleteFriend(ctx, userId, int32(friendId))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "删除失败", "error": err.Error()})
 		return

@@ -12,7 +12,7 @@ type FriendRequest struct {
 	Status      int8      `db:"status" json:"status"`                       // 请求状态, 1: 待处理, 2: 已同意, 3:已拒绝, 4: 已过期
 	RequestDesc string    `db:"request_desc" json:"request_desc,omitempty"` // 请求信息
 	RequestedAt time.Time `db:"requested_at" json:"requested_at,omitempty"` // 请求时间
-	ChangedAt   time.Time `db:"changed_at" json:"changed_at,omitempty"`     // 变更时间
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at,omitempty"`     // 变更时间
 }
 
 func (fr *FriendRequest) MarshalBinary() ([]byte, error) {
