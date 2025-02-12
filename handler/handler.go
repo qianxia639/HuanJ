@@ -52,13 +52,13 @@ func (handler *Handler) setupRouter() {
 
 	// Friend Request Router
 	authRouter.POST("/friend/request", handler.createFriendRequest)
-	authRouter.POST("/friend/request/accept", handler.acceptFriendRequest)
-	authRouter.POST("/friend/request/reject", handler.rejectFriendRequest)
+	authRouter.POST("/friend/request/accept/:id", handler.acceptFriendRequest)
+	authRouter.POST("/friend/request/reject/:id", handler.rejectFriendRequest)
 
 	// Friendship Router
 	authRouter.POST("/friendship", handler.createdFriend)
 	authRouter.GET("/friendship", handler.getFriends)
-	authRouter.DELETE("/friendship", handler.deleteFriend)
+	authRouter.DELETE("/friendship/:id", handler.deleteFriend)
 
 	handler.Router = router
 }

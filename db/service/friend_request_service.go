@@ -7,7 +7,7 @@ import (
 
 func (q *Queries) AddFriendRequest(ctx context.Context, fromUserId, toUserId int32, requestDesc string) error {
 
-	sql := `INSERT INTO friend_requests (from_user_id, to_user_id, request_desc) VALUES ($1, $2, $3)`
+	sql := `INSERT INTO friend_requests (user_id, friend_id, request_desc) VALUES ($1, $2, $3)`
 
 	return q.db.QueryRowContext(ctx, sql, fromUserId, toUserId, requestDesc).Err()
 
@@ -16,8 +16,8 @@ func (q *Queries) AddFriendRequest(ctx context.Context, fromUserId, toUserId int
 func (q *Queries) ExistsFriendRequest(ctx context.Context, fromUserId, toUserId int32) int8 {
 
 	sql := `SELECT COUNT(*) FROM friend_requests WHERE 
-		((from_user_id = $1 AND to_user_id = $2) OR 
-		(from_user_id = $2 AND to_user_id = $1)) AND status = 1`
+		((user_id = $1 AND friend_id = $2) OR 
+		(user_id = $2 AND friend_id = $1)) AND status = 1`
 
 	var count int8
 	err := q.db.GetContext(ctx, &count, sql, fromUserId, toUserId)
@@ -30,7 +30,7 @@ func (q *Queries) ExistsFriendRequest(ctx context.Context, fromUserId, toUserId 
 
 func (q *Queries) AcceptFriendRequest(ctx context.Context, requestId, userId int32) error {
 
-	sql1 := `UPDATE friend_requests SET status = 2, updated_at = now() WHERE id = $1 AND status = 1`
+	sql1 := `UPDATE friend_requests SET status = 2, updated_at = now() WHERE friend_id = $1 AND status = 1`
 	sql2 := `INSERT INTO friendships (user_id, friend_id) VALUES ($1, $2)`
 	sql3 := `INSERT INTO friendships (user_id, friend_id) VALUES ($1, $2)`
 
@@ -68,9 +68,9 @@ func (q *Queries) RejectFriendRequest(ctx context.Context, requestId, userId int
 			status  = 3,
 			updated_at = now()
 		WHERE
-			from_user_id = $1 AND to_user_id = $2
+			user_id = $1 AND friend_id = $2 AND status = 1
 	`
-	_, err := q.db.ExecContext(ctx, sql, requestId, userId)
+	_, err := q.db.ExecContext(ctx, sql, userId, requestId)
 	if err != nil {
 		logs.Error(err)
 		return err

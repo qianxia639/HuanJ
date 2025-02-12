@@ -16,7 +16,7 @@ import (
 
 func (q *Queries) CheckFriendship(ctx context.Context, userId, friendId int32) int8 {
 
-	sql := `SELECT * FROM friendships WHERE user_id = $1 AND friend_id = $2 AND status = 2`
+	sql := `SELECT * FROM friend_requests WHERE user_id = $1 AND friend_id = $2 AND status = 2`
 	var count int8
 	err := q.db.GetContext(ctx, &count, sql, userId, friendId)
 	if err != nil {
@@ -51,7 +51,7 @@ func (q *Queries) AddFriendTx(ctx context.Context, userId, friendId int32) error
 
 func (q *Queries) ExistsFriend(ctx context.Context, userId, friendId int32, status int8) int8 {
 
-	sql := `SELECT COUNT(*) FROM friendships WHERE user_id = $1 AND friend_id = $2 AND status = $3`
+	sql := `SELECT COUNT(*) FROM friendships WHERE user_id = $1 AND friend_id = $2`
 
 	var count int8
 	_ = q.db.GetContext(ctx, &count, sql, userId, friendId, status)
@@ -61,7 +61,7 @@ func (q *Queries) ExistsFriend(ctx context.Context, userId, friendId int32, stat
 
 func (q *Queries) GetFriend(ctx context.Context, userId, friendId int32) (*model.Friendship, error) {
 
-	sql := `SELECT * FROM friendships WHERE user_id = $1 AND friend_id = $2 AND status != 3`
+	sql := `SELECT * FROM friendships WHERE user_id = $1 AND friend_id = $2`
 
 	var friend model.Friendship
 	err := q.db.GetContext(ctx, &friend, sql, userId, friendId)
@@ -72,7 +72,7 @@ func (q *Queries) GetFriend(ctx context.Context, userId, friendId int32) (*model
 
 func (q *Queries) GetFriendAll(ctx context.Context, userId int32) ([]model.Friendship, error) {
 
-	sql := `SELECT * FROM friendships WHERE user_id = $1 AND status = 1`
+	sql := `SELECT * FROM friendships WHERE user_id = $1`
 
 	friends := []model.Friendship{}
 	err := q.db.SelectContext(ctx, &friends, sql, userId)

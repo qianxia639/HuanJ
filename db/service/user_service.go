@@ -2,6 +2,7 @@ package db
 
 import (
 	"Ice/db/model"
+	"Ice/internal/logs"
 	"context"
 )
 
@@ -63,6 +64,9 @@ func (q *Queries) GetUser(ctx context.Context, username string) (u model.User, e
 
 	sql := `SELECT * FROM users WHERE username = $1 LIMIT 1`
 	err = q.db.GetContext(ctx, &u, sql, username)
+	if err != nil {
+		logs.Errorf("Get user: %v\n", err.Error())
+	}
 
 	return
 }

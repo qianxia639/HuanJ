@@ -8,9 +8,9 @@ import (
 )
 
 type createdFriendRequest struct {
-	FromUserId  int32  `json:"from_user_id" binding:"required"` // 申请者Id
-	ToUserId    int32  `json:"to_user_id" binding:"required"`   // 接收者Id
-	Description string `json:"description" binding:"required"`  // 申请描述
+	UserId      int32  `json:"user_id" binding:"required"`     // 申请者Id
+	FriendId    int32  `json:"friend_id" binding:"required"`   // 接收者Id
+	Description string `json:"description" binding:"required"` // 申请描述
 }
 
 func (h *Handler) createdFriend(ctx *gin.Context) {
@@ -24,12 +24,12 @@ func (h *Handler) createdFriend(ctx *gin.Context) {
 		return
 	}
 
-	if req.FromUserId == req.ToUserId {
+	if req.UserId == req.FriendId {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "不能添加自己为好友"})
 		return
 	}
 
-	if u, _ := h.Queries.GetUserById(ctx, req.ToUserId); u.ID < 1 {
+	if u, _ := h.Queries.GetUserById(ctx, req.FriendId); u.ID < 1 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户不存在"})
 		return
 	}
@@ -47,14 +47,14 @@ func (h *Handler) createdFriend(ctx *gin.Context) {
 	// 	ctx.JSON(http.StatusUnauthorized, gin.H{"messagge": "权限不足"})
 	// 	return
 	// }
-	if req.FromUserId != h.CurrentUserInfo.ID {
+	if req.UserId != h.CurrentUserInfo.ID {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"messagge": "权限不足",
-			"from_user_id": req.FromUserId, "id": h.CurrentUserInfo.ID})
+			"from_user_id": req.UserId, "id": h.CurrentUserInfo.ID})
 		return
 	}
 
 	// 判断是否已经是好友
-	if i := h.Queries.ExistsFriend(ctx, req.FromUserId, req.ToUserId, ACCEPTED); i > 0 {
+	if i := h.Queries.ExistsFriend(ctx, req.UserId, req.FriendId, ACCEPTED); i > 0 {
 		ctx.JSON(http.StatusOK, gin.H{"message": "已经是好友"})
 		return
 	}
@@ -62,15 +62,15 @@ func (h *Handler) createdFriend(ctx *gin.Context) {
 	// 判断关系是否存在
 	// 如果A申请B存在，则直接返回
 	// 如果A申请B存爱且B又申请A，则B同意A的申请
-	if i := h.Queries.ExistsFriend(ctx, req.FromUserId, req.ToUserId, PENDING); i > 0 {
+	if i := h.Queries.ExistsFriend(ctx, req.UserId, req.FriendId, PENDING); i > 0 {
 		ctx.JSON(http.StatusOK, gin.H{"message": "关系存在"})
 		return
 	}
 
 	// 判断是否有来自对方的申请
 	// 存在则同意
-	if i := h.Queries.ExistsFriend(ctx, req.ToUserId, req.FromUserId, PENDING); i > 0 {
-		if err := h.Queries.AddFriendTx(ctx, req.FromUserId, req.ToUserId); err != nil {
+	if i := h.Queries.ExistsFriend(ctx, req.FriendId, req.UserId, PENDING); i > 0 {
+		if err := h.Queries.AddFriendTx(ctx, req.UserId, req.FriendId); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -78,7 +78,7 @@ func (h *Handler) createdFriend(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.Queries.AddFriendRequest(ctx, req.FromUserId, req.ToUserId, ""); err != nil {
+	if err := h.Queries.AddFriendRequest(ctx, req.FriendId, req.UserId, ""); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -105,7 +105,7 @@ func (h *Handler) getFriends(ctx *gin.Context) {
 func (h *Handler) deleteFriend(ctx *gin.Context) {
 
 	userId := h.CurrentUserInfo.ID
-	friendId, err := strconv.ParseInt(ctx.Param("friend_id"), 10, 32)
+	friendId, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
 	if err != nil {
 		Error(ctx, http.StatusOK, "Invalid param")
 		return

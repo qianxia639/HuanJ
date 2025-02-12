@@ -9,7 +9,7 @@ import (
 )
 
 type createFriendRecordRequest struct {
-	ToUserId    int32  `json:"to_user_id" binding:"required"`
+	FriendId    int32  `json:"friend_id" binding:"required"`
 	RequestDesc string `json:"request_desc"`
 }
 
@@ -20,25 +20,32 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 		return
 	}
 
-	if req.ToUserId == handler.CurrentUserInfo.ID {
-		logs.Errorf("userId: %d, friendId: %d\n", handler.CurrentUserInfo.ID, req.ToUserId)
+	if req.FriendId == handler.CurrentUserInfo.ID {
+		logs.Errorf("userId: %d, friendId: %d\n", handler.CurrentUserInfo.ID, req.FriendId)
 		Error(ctx, http.StatusUnauthorized, "不能添加自己")
 		return
 	}
 
-	// 减产是否已经是好友
-	if count := handler.Queries.CheckFriendship(ctx, handler.CurrentUserInfo.ID, req.ToUserId); count > 0 {
+	// 检查请求者是否存在
+	u, _ := handler.Queries.GetUserById(ctx, req.FriendId)
+	if u.ID == 0 {
+		Error(ctx, http.StatusUnauthorized, "用户不存在")
+		return
+	}
+
+	// 检查是否已经是好友
+	if count := handler.Queries.CheckFriendship(ctx, handler.CurrentUserInfo.ID, req.FriendId); count > 0 {
 		ctx.JSON(http.StatusOK, "已经是好友")
 		return
 	}
 
 	// 检查是否存在待处理的请求
-	if count := handler.Queries.ExistsFriendRequest(ctx, handler.CurrentUserInfo.ID, req.ToUserId); count > 0 {
+	if count := handler.Queries.ExistsFriendRequest(ctx, handler.CurrentUserInfo.ID, req.FriendId); count > 0 {
 		Error(ctx, http.StatusInternalServerError, "已存在待处理的请求")
 		return
 	}
 
-	if err := handler.Queries.AddFriendRequest(ctx, handler.CurrentUserInfo.ID, req.ToUserId, req.RequestDesc); err != nil {
+	if err := handler.Queries.AddFriendRequest(ctx, handler.CurrentUserInfo.ID, req.FriendId, req.RequestDesc); err != nil {
 		logs.Error(err)
 		Error(ctx, http.StatusInternalServerError, "申请失败")
 		return
