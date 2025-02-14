@@ -60,5 +60,8 @@ func (handler *Handler) setupRouter() {
 	authRouter.GET("/friendship", handler.getFriends)
 	authRouter.DELETE("/friendship/:id", handler.deleteFriend)
 
+	// Group Router
+	authRouter.POST("/group", handler.createGroup)
+
 	handler.Router = router
 }
