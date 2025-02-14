@@ -1,7 +1,7 @@
 DB_URL=postgres://postgres:postgres@localhost:5432/dandelion?sslmode=disable
 
-server:
-	go run main.go
+run:
+	go run cmd/main.go
 
 migrateup:
 	migrate -path db/migration -database "${DB_URL}" -verbose up 1
@@ -18,4 +18,4 @@ migratedownall:
 newmigrate:
 	migrate create -ext sql -dir db/migration -seq $(name)
 
-.PHONLY: server migrateup migratedown migrateupall migratedownall newmigrate
+.PHONLY: run migrateup migratedown migrateupall migratedownall newmigrate
