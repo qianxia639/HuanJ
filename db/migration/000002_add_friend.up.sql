@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS "friendships" (
     "friend_id" INT NOT NULL,
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, friend_id),
-    CONSTRAINT "friendships_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id),
-    CONSTRAINT "friendships_friend_id_fk" FOREIGN KEY (friend_id) REFERENCES users (id)
+    CONSTRAINT "friendships_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT "friendships_friend_id_fk" FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 COMMENT ON COLUMN "friendships"."user_id" IS '用户ID';
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS "friend_requests" (
     "status" SMALLINT NOT NULL DEFAULT 1,
     "requested_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT '0001-01-01 00:00:00',
-    CONSTRAINT "friend_requests_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id),
-    CONSTRAINT "friend_requests_friend_id_fk" FOREIGN KEY (friend_id) REFERENCES users (id)
+    CONSTRAINT "friend_requests_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT "friend_requests_friend_id_fk" FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 COMMENT ON COLUMN "friend_requests"."id" IS '请求ID';

@@ -54,7 +54,7 @@ func (h *Handler) createdFriend(ctx *gin.Context) {
 	}
 
 	// 判断是否已经是好友
-	if i := h.Queries.ExistsFriend(ctx, req.UserId, req.FriendId, ACCEPTED); i > 0 {
+	if i := h.Queries.ExistsFriend(ctx, req.UserId, req.FriendId, Accepted); i > 0 {
 		ctx.JSON(http.StatusOK, gin.H{"message": "已经是好友"})
 		return
 	}
@@ -62,14 +62,14 @@ func (h *Handler) createdFriend(ctx *gin.Context) {
 	// 判断关系是否存在
 	// 如果A申请B存在，则直接返回
 	// 如果A申请B存爱且B又申请A，则B同意A的申请
-	if i := h.Queries.ExistsFriend(ctx, req.UserId, req.FriendId, PENDING); i > 0 {
+	if i := h.Queries.ExistsFriend(ctx, req.UserId, req.FriendId, Pending); i > 0 {
 		ctx.JSON(http.StatusOK, gin.H{"message": "关系存在"})
 		return
 	}
 
 	// 判断是否有来自对方的申请
 	// 存在则同意
-	if i := h.Queries.ExistsFriend(ctx, req.FriendId, req.UserId, PENDING); i > 0 {
+	if i := h.Queries.ExistsFriend(ctx, req.FriendId, req.UserId, Pending); i > 0 {
 		if err := h.Queries.AddFriendTx(ctx, req.UserId, req.FriendId); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -124,7 +124,7 @@ func (h *Handler) deleteFriend(ctx *gin.Context) {
 	}
 
 	// 判断是否是好友
-	if i := h.Queries.ExistsFriend(ctx, userId, int32(friendId), ACCEPTED); i < 1 {
+	if i := h.Queries.ExistsFriend(ctx, userId, int32(friendId), Accepted); i < 1 {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "非好友无法删除"})
 		return
 	}

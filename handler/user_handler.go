@@ -59,7 +59,7 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		return
 	}
 
-	if ANSWER != req.Answer {
+	if Answer != req.Answer {
 		Error(ctx, http.StatusBadRequest, "验证失败")
 		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "验证失败"})
 		return

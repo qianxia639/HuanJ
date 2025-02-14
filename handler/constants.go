@@ -1,7 +1,7 @@
 package handler
 
 // 人机校验
-const ANSWER = "Ice"
+const Answer = "Ice"
 
 // 性别
 var Gender = map[int8]struct{}{
@@ -12,15 +12,15 @@ var Gender = map[int8]struct{}{
 
 // 申请状态
 const (
-	PENDING  int8 = iota + 1 // 待处理
-	ACCEPTED                 // 已同意
-	REJECTED                 // 已拒绝
-	IGNORED                  // 已忽略
+	Pending  int8 = iota + 1 // 待处理
+	Accepted                 // 已同意
+	Rejected                 // 已拒绝
+	Ignored                  // 已忽略
 )
 
-// 邀请码
+// 角色
 const (
-	UNUSED  = -1 // 未使用
-	USED    = 1  // 已使用
-	EXPIRED = -2 // 已过期
+	Owner  int8 = iota + 1 // 创建者
+	Admin                  // 管理员
+	Member                 // 普通成员
 )
