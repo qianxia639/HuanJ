@@ -7,19 +7,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-var instance *Config
-var once sync.Once
+type ConfigManager struct {
+	instance *Config
+	once     sync.Once
+}
 
-func LoadConfig(path string) *Config {
-	once.Do(func() {
-		viper.AddConfigPath(path)
-		viper.SetConfigName("config")
-		viper.SetConfigType("toml")
+func (m *ConfigManager) LoadConfig(path, filename, configType string) *Config {
+	m.once.Do(func() {
 
-		viper.AutomaticEnv()
-
-		err := viper.ReadInConfig()
-		if err != nil {
+		if err := setupViper(path, filename, configType); err != nil {
 			logs.Fatalf("Failed to read config file: %v", err)
 		}
 
@@ -28,8 +24,18 @@ func LoadConfig(path string) *Config {
 			logs.Fatalf("Failed to unmarshal config data: %v", err)
 		}
 
-		instance = &conf
+		m.instance = &conf
 	})
 
-	return instance
+	return m.instance
+}
+
+func setupViper(path, filename, configType string) error {
+	viper.AddConfigPath(path)
+	viper.SetConfigName(filename)
+	viper.SetConfigType(configType)
+
+	viper.AutomaticEnv()
+
+	return viper.ReadInConfig()
 }

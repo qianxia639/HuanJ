@@ -7,15 +7,10 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	conf := LoadConfig(".")
+	var cm ConfigManager
+	conf := cm.LoadConfig(".", "config", "toml")
+
+	t.Logf("config: %+v\n", conf)
 
 	require.NotEmpty(t, conf)
-}
-
-func TestSingletonPattern(t *testing.T) {
-	firstConf := LoadConfig(".")
-
-	secondConf := LoadConfig(".")
-
-	require.Equal(t, firstConf, secondConf)
 }

@@ -24,10 +24,11 @@ import (
 
 func main() {
 
+	var cm config.ConfigManager
+	conf := cm.LoadConfig("internal/config/.", "config", "toml")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	conf := config.LoadConfig("internal/config/.")
 
 	dbConnect, err := sqlx.Connect(conf.Postgres.Driver, conf.Postgres.DatabaseSource())
 	if err != nil {
