@@ -155,7 +155,7 @@ func (h *Handler) login(ctx *gin.Context) {
 
 func (h *Handler) getUser(ctx *gin.Context) {
 
-	h.CurrentUserInfo.Email = utils.DesnsitizeEmail(h.CurrentUserInfo.Email)
+	h.CurrentUserInfo.Email = utils.MaskEmail(h.CurrentUserInfo.Email)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": h.CurrentUserInfo})
 }
@@ -203,7 +203,7 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 
 	_ = h.Redis.Set(ctx, fmt.Sprintf("user:%s", payload.Username), &h.CurrentUserInfo, 24*time.Hour)
 
-	h.CurrentUserInfo.Email = utils.DesnsitizeEmail(h.CurrentUserInfo.Email)
+	h.CurrentUserInfo.Email = utils.MaskEmail(h.CurrentUserInfo.Email)
 
 	ctx.JSON(http.StatusOK, gin.H{"data": h.CurrentUserInfo})
 }
