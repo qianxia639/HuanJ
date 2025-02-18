@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"Ice/db/model"
+	db "Ice/db/sqlc"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,19 +28,13 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		if !strings.HasPrefix(authorization, authorizationPrefix) {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization header invalid"})
-			return
-		}
-
-		fields := strings.Fields(authorization)
-		payload, err := h.Token.VerifyToken(fields[1])
+		payload, err := h.Token.VerifyToken(authorization)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
-		var loginUserInfo model.LoginUserInfo
+		var loginUserInfo db.LoginUserInfo
 		err = h.Redis.Get(ctx, fmt.Sprintf("user:%s", payload.Username)).Scan(&loginUserInfo)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)

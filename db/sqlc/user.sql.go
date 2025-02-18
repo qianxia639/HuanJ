@@ -49,3 +49,79 @@ func (q *Queries) CreateUser(ctx context.Context, arg *CreateUserParams) (User, 
 	)
 	return i, err
 }
+
+const existsEmail = `-- name: ExistsEmail :one
+SELECT COUNT(*) FROM users WHERE email = $1
+`
+
+func (q *Queries) ExistsEmail(ctx context.Context, email string) (int64, error) {
+	row := q.db.QueryRow(ctx, existsEmail, email)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const existsNickname = `-- name: ExistsNickname :one
+SELECT COUNT(*) FROM users WHERE nickname = $1
+`
+
+func (q *Queries) ExistsNickname(ctx context.Context, nickname string) (int64, error) {
+	row := q.db.QueryRow(ctx, existsNickname, nickname)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const existsUsername = `-- name: ExistsUsername :one
+SELECT COUNT(*) FROM users WHERE username = $1
+`
+
+func (q *Queries) ExistsUsername(ctx context.Context, username string) (int64, error) {
+	row := q.db.QueryRow(ctx, existsUsername, username)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at FROM users WHERE username = $1 LIMIT 1
+`
+
+func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRow(ctx, getUser, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Nickname,
+		&i.Password,
+		&i.Email,
+		&i.Gender,
+		&i.AvatarUrl,
+		&i.PasswordChangedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE users 
+SET 
+	gender = $1, 
+	nickname = $2, 
+	updated_at = now()
+WHERE id = $3
+AND (gender IS DISTINCT FROM $1 OR nickname IS DISTINCT FROM $2)
+`
+
+type UpdateUserParams struct {
+	Gender   int16  `json:"gender"`
+	Nickname string `json:"nickname"`
+	ID       int32  `json:"id"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) error {
+	_, err := q.db.Exec(ctx, updateUser, arg.Gender, arg.Nickname, arg.ID)
+	return err
+}

@@ -1,7 +1,7 @@
 package service
 
 import (
-	"Ice/db/model"
+	db "Ice/db/sqlc"
 	"Ice/internal/logs"
 	"context"
 )
@@ -60,7 +60,7 @@ func (q *Queries) ExistsNickname(ctx context.Context, nickname string) int8 {
 	return count
 }
 
-func (q *Queries) GetUser(ctx context.Context, username string) (u model.User, err error) {
+func (q *Queries) GetUser(ctx context.Context, username string) (u db.User, err error) {
 
 	sql := `SELECT * FROM users WHERE username = $1 LIMIT 1`
 	err = q.db.GetContext(ctx, &u, sql, username)
@@ -71,7 +71,7 @@ func (q *Queries) GetUser(ctx context.Context, username string) (u model.User, e
 	return
 }
 
-func (q *Queries) GetUserById(ctx context.Context, id int32) (u model.User, err error) {
+func (q *Queries) GetUserById(ctx context.Context, id int32) (u db.User, err error) {
 
 	sql := `SELECT * FROM users WHERE id = $1 LIMIT 1`
 	err = q.db.GetContext(ctx, &u, sql, id)
@@ -81,7 +81,7 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (u model.User, err 
 
 // IS DISTINCT FROM：此语法用于比较两个值是否不同，即使其中一个值为 NULL，也能正确处理
 // 通过添加 AND 子句，避免在值未更改时执行更新操作，从而减少不必要的数据库写入
-func (q *Queries) UpdateUser(ctx context.Context, user model.User) error {
+func (q *Queries) UpdateUser(ctx context.Context, user db.User) error {
 
 	sql := `UPDATE users 
 			SET 

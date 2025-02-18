@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"Ice/db/model"
-	db "Ice/db/service"
+	db "Ice/db/sqlc"
 	"Ice/internal/utils"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -54,7 +52,7 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		return
 	}
 	// 判断用户名是否存在
-	if i := h.Queries.ExistsUser(ctx, req.Username); i > 0 {
+	if i, _ := h.Store.ExistsUsername(ctx, req.Username); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名已存在"})
 		return
 	}
@@ -66,7 +64,7 @@ func (h *Handler) createUser(ctx *gin.Context) {
 	}
 
 	// 判断邮箱是否存在
-	if i := h.Queries.ExistsEmail(ctx, req.Email); i > 0 {
+	if i, _ := h.Store.ExistsEmail(ctx, req.Email); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已存在"})
 		return
 	}
@@ -84,10 +82,10 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		Nickname: req.Username,
 		Password: hashPwd,
 		Email:    req.Email,
-		Gender:   req.Gender,
+		Gender:   int16(req.Gender),
 	}
 
-	err = h.Queries.CreateUser(ctx, args)
+	_, err = h.Store.CreateUser(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "insert error", "error": err.Error()})
 		return
@@ -116,7 +114,7 @@ func (h *Handler) login(ctx *gin.Context) {
 	}
 
 	// 判断用户是否存在
-	user, err := h.Queries.GetUser(ctx, req.Username)
+	user, err := h.Store.GetUser(ctx, req.Username)
 	if user.ID == 0 {
 		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存", "error": err.Error()})
 		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存"})
@@ -136,7 +134,7 @@ func (h *Handler) login(ctx *gin.Context) {
 		return
 	}
 
-	loginUserInfo := model.LoginUserInfo{
+	loginUserInfo := db.LoginUserInfo{
 		User:      user,
 		UserAgent: ua,
 		LoginIp:   ctx.ClientIP(),
@@ -161,7 +159,7 @@ func (h *Handler) getUser(ctx *gin.Context) {
 }
 
 type updateUserRequest struct {
-	Gender   *int8   `json:"gender"`
+	Gender   *int16  `json:"gender"`
 	Nickname *string `json:"nickname"`
 }
 
@@ -173,16 +171,15 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 	}
 
 	auth := ctx.Request.Header.Get(authorizationHeader)
-	fields := strings.Fields(auth)
-	payload, err := h.Token.VerifyToken(fields[1])
+	payload, err := h.Token.VerifyToken(auth)
 	if err != nil {
 		Error(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if req.Nickname != nil && len(*req.Nickname) > 3 && *req.Nickname != h.CurrentUserInfo.Nickname {
-		// 判断用户昵称是否存在
-		if i := h.Queries.ExistsNickname(ctx, *req.Nickname); i > 0 {
+	if req.Nickname != nil && *req.Nickname != h.CurrentUserInfo.Nickname {
+		// 判断用户昵称是否重复
+		if i, _ := h.Store.ExistsNickname(ctx, *req.Nickname); i > 0 {
 			ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户昵称存在"})
 			return
 		}
@@ -193,9 +190,17 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 		h.CurrentUserInfo.Gender = *req.Gender
 	}
 
-	// h.CurrentUserInfo.UpdatedAt = time.Now()
+	args := &db.UpdateUserParams{
+		Gender:   h.CurrentUserInfo.Gender,
+		ID:       h.CurrentUserInfo.ID,
+		Nickname: h.CurrentUserInfo.Nickname,
+	}
+	err = h.Store.UpdateUser(ctx, args)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Update user failed", "error": err.Error()})
+		return
+	}
 
-	err = h.Queries.UpdateUser(ctx, h.CurrentUserInfo.User)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Update user failed", "error": err.Error()})
 		return

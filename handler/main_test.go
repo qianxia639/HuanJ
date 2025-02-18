@@ -1,7 +1,7 @@
 package handler
 
 import (
-	db "Ice/db/service"
+	db "Ice/db/sqlc"
 	"Ice/internal/config"
 	"Ice/internal/utils"
 	"os"
@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func newTestHandler(t *testing.T, queries *db.Queries) *Handler {
+func newTestHandler(t *testing.T, store db.Store) *Handler {
 	conf := config.Config{
 		Token: config.Token{
 			TokenSymmetricKey:   utils.RandomString(32),
@@ -27,7 +27,7 @@ func newTestHandler(t *testing.T, queries *db.Queries) *Handler {
 		},
 	}
 
-	h := NewHandler(conf, queries, nil)
+	h := NewHandler(conf, store, nil)
 	require.Equal(t, 1, 1)
 
 	return h

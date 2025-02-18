@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"Ice/db/model"
 	"Ice/db/service"
 	db "Ice/db/sqlc"
 	"Ice/internal/config"
@@ -17,7 +16,7 @@ type Handler struct {
 	Queries         *service.Queries
 	Store           db.Store
 	Token           token.Maker
-	CurrentUserInfo model.LoginUserInfo
+	CurrentUserInfo db.LoginUserInfo
 	Redis           *redis.Client
 }
 
