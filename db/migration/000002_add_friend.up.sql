@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS "friendships" (
     "user_id" INT NOT NULL,
     "friend_id" INT NOT NULL,
-    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "comment" VARCHAR(20) NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, friend_id),
     CONSTRAINT "friendships_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT "friendships_friend_id_fk" FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE
@@ -10,7 +11,9 @@ CREATE TABLE IF NOT EXISTS "friendships" (
 
 COMMENT ON COLUMN "friendships"."user_id" IS '用户ID';
 
-COMMENT ON COLUMN "friendships"."friend_id" IS '好友的用户ID';
+COMMENT ON COLUMN "friendships"."friend_id" IS '好友ID';
+
+COMMENT ON COLUMN "friendships"."comment" IS '好友备注';
 
 COMMENT ON COLUMN "friendships"."created_at" IS '创建时间';
 
@@ -19,10 +22,10 @@ CREATE TABLE IF NOT EXISTS "friend_requests" (
     "id" SERIAL PRIMARY KEY,
     "user_id" INT NOT NULL,
     "friend_id" INT NOT NULL,
-    "request_desc" VARCHAR(100) NOT NULL,
+    "request_desc" VARCHAR(100) NOT NULL DEFAULT '',
     "status" SMALLINT NOT NULL DEFAULT 1,
-    "requested_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT '0001-01-01 00:00:00',
+    "requested_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT '0001-01-01 00:00:00Z',
     CONSTRAINT "friend_requests_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT "friend_requests_friend_id_fk" FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE
 );

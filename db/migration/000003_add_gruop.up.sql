@@ -3,11 +3,11 @@ CREATE TABLE IF NOT EXISTS "groups" (
     "id" SERIAL PRIMARY KEY,
     "group_name" VARCHAR(64) NOT NULL UNIQUE,
     "creator_id" INT NOT NULL,
-    "group_avatar_url" VARCHAR(512),
-    "description" VARCHAR(255),
-    "max_member" INT DEFAULT 500,
-    "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ DEFAULT '0001-01-01 00:00:00',
+    "group_avatar_url" VARCHAR(512) NOT NULL DEFAULT '',
+    "description" VARCHAR(255) NOT NULL DEFAULT '',
+    "max_member" INT NOT NULL DEFAULT 500,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT '0001-01-01 00:00:00Z',
     CONSTRAINT "groups_creator_id_fk" FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS "group_members" (
     "user_id" INT NOT NULL,
     "role"  SMALLINT NOT NULL DEFAULT 3,
     "waiting" BOOLEAN NOT NULL DEFAULT true,
-    "joined_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "joined_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (group_id, user_id),
     CONSTRAINT "group_members_group_id_fk" FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE,
     CONSTRAINT "group_members_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE

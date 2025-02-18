@@ -1,7 +1,7 @@
 package main
 
 import (
-	db "Ice/db/service"
+	db "Ice/db/sqlc"
 	"Ice/handler"
 	"Ice/internal/config"
 	"context"
@@ -14,7 +14,7 @@ import (
 	"Ice/internal/logs"
 
 	_ "github.com/jackc/pgx/v5"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -25,32 +25,31 @@ import (
 func main() {
 
 	var cm config.ConfigManager
-	conf := cm.LoadConfig("internal/config/.", "config", "toml")
+	conf := cm.LoadConfig("internal/config/.")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	dbConnect, err := sqlx.Connect(conf.Postgres.Driver, conf.Postgres.DatabaseSource())
+	connPool, err := pgxpool.New(ctx, conf.Postgres.DatabaseSource())
 	if err != nil {
-		logs.Fatalf("Connect database err: %v\n", err)
+		logs.Fatalf("Cannot conect to database: %v\n", err)
 	}
-	defer dbConnect.Close()
 
 	rdb := initRedisClient(conf.Redis.Address())
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		logs.Fatalf("Connect Redis error: %v", err)
 	}
 
-	queries := db.NewQueries(dbConnect)
+	runDBMigration(conf.Postgres.MigrationUrl, conf.Postgres.DatabaseUrl())
 
-	router := handler.NewHandler(*conf, queries, rdb)
+	store := db.NewStore(connPool)
+
+	router := handler.NewHandler(conf, store, rdb)
 
 	srv := &http.Server{
 		Addr:    conf.Http.Address(),
 		Handler: router.Router,
 	}
-
-	runDBMigration(conf.Postgres.MigrationUrl, conf.Postgres.DatabaseUrl())
 
 	shutdown(ctx, srv)
 

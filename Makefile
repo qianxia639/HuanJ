@@ -18,4 +18,7 @@ migratedownall:
 newmigrate:
 	migrate create -ext sql -dir db/migration -seq $(name)
 
-.PHONLY: run migrateup migratedown migrateupall migratedownall newmigrate
+sqlc:
+	sqlc generate
+
+.PHONLY: run migrateup migratedown migrateupall migratedownall newmigrate sqlc

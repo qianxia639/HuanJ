@@ -12,10 +12,10 @@ type ConfigManager struct {
 	once     sync.Once
 }
 
-func (m *ConfigManager) LoadConfig(path, filename, configType string) *Config {
+func (m *ConfigManager) LoadConfig(path string) Config {
 	m.once.Do(func() {
 
-		if err := setupViper(path, filename, configType); err != nil {
+		if err := setupViper(path); err != nil {
 			logs.Fatalf("Failed to read config file: %v", err)
 		}
 
@@ -27,13 +27,13 @@ func (m *ConfigManager) LoadConfig(path, filename, configType string) *Config {
 		m.instance = &conf
 	})
 
-	return m.instance
+	return *m.instance
 }
 
-func setupViper(path, filename, configType string) error {
+func setupViper(path string) error {
 	viper.AddConfigPath(path)
-	viper.SetConfigName(filename)
-	viper.SetConfigType(configType)
+	viper.SetConfigName("config")
+	viper.SetConfigType("toml")
 
 	viper.AutomaticEnv()
 

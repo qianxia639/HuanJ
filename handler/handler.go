@@ -2,7 +2,8 @@ package handler
 
 import (
 	"Ice/db/model"
-	db "Ice/db/service"
+	"Ice/db/service"
+	db "Ice/db/sqlc"
 	"Ice/internal/config"
 	"Ice/internal/token"
 
@@ -13,19 +14,21 @@ import (
 type Handler struct {
 	Router          *gin.Engine
 	Conf            config.Config
-	Queries         *db.Queries
+	Queries         *service.Queries
+	Store           db.Store
 	Token           token.Maker
 	CurrentUserInfo model.LoginUserInfo
 	Redis           *redis.Client
 }
 
-func NewHandler(conf config.Config, queries *db.Queries, rdb *redis.Client) *Handler {
+func NewHandler(conf config.Config, store db.Store, rdb *redis.Client) *Handler {
 
 	maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
 
 	handler := &Handler{
 		Conf:    conf,
-		Queries: queries,
+		Queries: nil,
+		Store:   store,
 		Token:   maker,
 		Redis:   rdb,
 	}

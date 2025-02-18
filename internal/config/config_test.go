@@ -8,7 +8,7 @@ import (
 
 func TestLoadConfig(t *testing.T) {
 	var cm ConfigManager
-	conf := cm.LoadConfig(".", "config", "toml")
+	conf := cm.LoadConfig(".")
 
 	t.Logf("config: %+v\n", conf)
 
