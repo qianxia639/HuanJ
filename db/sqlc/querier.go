@@ -11,12 +11,15 @@ import (
 type Querier interface {
 	CreateFriendRequest(ctx context.Context, arg *CreateFriendRequestParams) error
 	CreateFriendship(ctx context.Context, arg *CreateFriendshipParams) (Friendship, error)
+	CreateGroup(ctx context.Context, arg *CreateGroupParams) (Group, error)
+	CreateGroupMember(ctx context.Context, arg *CreateGroupMemberParams) (GroupMember, error)
 	CreateUser(ctx context.Context, arg *CreateUserParams) (User, error)
 	ExistsEmail(ctx context.Context, email string) (int64, error)
 	ExistsFriendRequest(ctx context.Context, arg *ExistsFriendRequestParams) (int64, error)
 	ExistsFriendship(ctx context.Context, arg *ExistsFriendshipParams) (int64, error)
 	ExistsNickname(ctx context.Context, nickname string) (int64, error)
 	ExistsUsername(ctx context.Context, username string) (int64, error)
+	GetGroup(ctx context.Context, groupName string) (Group, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
 	UpdateFriendRequest(ctx context.Context, arg *UpdateFriendRequestParams) error

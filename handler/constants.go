@@ -20,7 +20,7 @@ const (
 
 // 角色
 const (
-	Owner  int8 = iota + 1 // 创建者
+	Group  int8 = iota + 1 // 群主
 	Admin                  // 管理员
 	Member                 // 普通成员
 )

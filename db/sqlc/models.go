@@ -62,8 +62,8 @@ type GroupMember struct {
 	UserID int32 `json:"user_id"`
 	// 成员角色, 1: 群主, 2: 管理员, 3: 普通成员
 	Role int16 `json:"role"`
-	// 等待同意, f: 已同意, t: 未同意
-	Waiting bool `json:"waiting"`
+	// 等待同意, f: 未同意, t: 已同意
+	Agreed bool `json:"agreed"`
 	// 加入时间
 	JoinedAt time.Time `json:"joined_at"`
 }

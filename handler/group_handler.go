@@ -1,7 +1,7 @@
 package handler
 
 import (
-	db "Ice/db/service"
+	db "Ice/db/sqlc"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,24 +20,46 @@ func (handler *Handler) createGroup(ctx *gin.Context) {
 	}
 
 	// 判断群组是否已存在
-	group, _ := handler.Queries.GetGroup(ctx, req.GroupName)
+	group, _ := handler.Store.GetGroup(ctx, req.GroupName)
 	if group.ID > 0 {
 		Error(ctx, http.StatusBadRequest, "群组名存在")
 		return
 	}
 
 	// 创建群组
-	//  TODO 群组创建成功后应在群组成员表中插入记录
-	if err := handler.Queries.CreateGroup(ctx, &db.CreateGroupParams{
-		CreatorId:   handler.CurrentUserInfo.ID,
-		GroupName:   req.GroupName,
-		Description: req.Description,
-		UserId:      handler.CurrentUserInfo.ID,
-		Role:        Owner,
-	}); err != nil {
-		Error(ctx, http.StatusInternalServerError, err.Error())
+	// 创建成功后并将创建者信息写入群员表
+	// result, err := handler.Store.CreateGroupTx(ctx, db.CreateGroupTxParams{
+	// 	CreateGroupParams: db.CreateGroupParams{
+	// 		GroupName:   req.GroupName,
+	// 		CreatorID:   handler.CurrentUserInfo.ID,
+	// 		Description: req.Description,
+	// 	},
+	// 	AfterCreate: func(group db.Group) error {
+	// 		_, err := handler.Store.CreateGroupMember(ctx, &db.CreateGroupMemberParams{
+	// 			GroupID: group.ID,
+	// 			UserID:  handler.CurrentUserInfo.ID,
+	// 			Role:    int16(Group),
+	// 			Agreed:  true,
+	// 		})
+	// 		return err
+	// 	},
+	// })
+
+	result, err := handler.Store.CreateGroupTx(ctx, db.CreateGroupTxParams{
+		CreateGroupParams: db.CreateGroupParams{
+			GroupName:   req.GroupName,
+			CreatorID:   handler.CurrentUserInfo.ID,
+			Description: req.Description,
+		},
+		UserId: handler.CurrentUserInfo.ID,
+		Role:   int16(Group),
+		Agreed: true,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	Success(ctx, nil)
+	Success(ctx, result)
 }

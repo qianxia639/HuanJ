@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS "group_members" (
     "group_id" INT NOT NULL,
     "user_id" INT NOT NULL,
     "role"  SMALLINT NOT NULL DEFAULT 3,
-    "waiting" BOOLEAN NOT NULL DEFAULT true,
+    "agreed" BOOLEAN NOT NULL DEFAULT false,
     "joined_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (group_id, user_id),
     CONSTRAINT "group_members_group_id_fk" FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE,
@@ -45,6 +45,6 @@ COMMENT ON COLUMN "group_members"."user_id" IS '用户ID';
 
 COMMENT ON COLUMN "group_members"."role" IS '成员角色, 1: 群主, 2: 管理员, 3: 普通成员';
 
-COMMENT ON COLUMN "group_members"."waiting" IS '等待同意, f: 已同意, t: 未同意';
+COMMENT ON COLUMN "group_members"."agreed" IS '等待同意, f: 未同意, t: 已同意';
 
 COMMENT ON COLUMN "group_members"."joined_at" IS '加入时间';
