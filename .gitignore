@@ -1,5 +1,3 @@
 .vscode
 
 *.exe
-
-internal/config/*.toml
