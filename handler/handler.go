@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"Ice/db/service"
 	db "Ice/db/sqlc"
 	"Ice/internal/config"
 	"Ice/internal/token"
@@ -13,7 +12,6 @@ import (
 type Handler struct {
 	Router          *gin.Engine
 	Conf            config.Config
-	Queries         *service.Queries
 	Store           db.Store
 	Token           token.Maker
 	CurrentUserInfo db.LoginUserInfo
@@ -25,11 +23,10 @@ func NewHandler(conf config.Config, store db.Store, rdb *redis.Client) *Handler 
 	maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
 
 	handler := &Handler{
-		Conf:    conf,
-		Queries: nil,
-		Store:   store,
-		Token:   maker,
-		Redis:   rdb,
+		Conf:  conf,
+		Store: store,
+		Token: maker,
+		Redis: rdb,
 	}
 
 	handler.setupRouter()
