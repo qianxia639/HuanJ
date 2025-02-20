@@ -58,7 +58,7 @@ func (handler *Handler) setupRouter() {
 	authRouter.POST("/friend/request/reject/:id", handler.rejectFriendRequest)
 
 	// Friendship Router
-	authRouter.POST("/friendship", handler.createdFriend)
+	// authRouter.POST("/friendship", handler.createdFriend)
 	authRouter.GET("/friendship", handler.getFriends)
 	authRouter.DELETE("/friendship/:id", handler.deleteFriend)
 
