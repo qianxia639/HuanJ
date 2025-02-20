@@ -21,4 +21,7 @@ newmigrate:
 sqlc:
 	sqlc generate
 
-.PHONLY: run migrateup migratedown migrateupall migratedownall newmigrate sqlc
+test:
+	go test -v -cover -short ./...
+
+.PHONLY: run migrateup migratedown migrateupall migratedownall newmigrate sqlc test

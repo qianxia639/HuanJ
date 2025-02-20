@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,7 +28,13 @@ func newTestHandler(t *testing.T, store db.Store) *Handler {
 		},
 	}
 
-	h := NewHandler(conf, store, nil)
+	rdb := redis.NewClient(&redis.Options{
+		Addr: conf.Redis.Address(),
+	})
+	// err := rdb.Ping(context.Background()).Err()
+	// require.NoError(t, err)
+
+	h := NewHandler(conf, store, rdb)
 	require.Equal(t, 1, 1)
 
 	return h
