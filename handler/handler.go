@@ -39,6 +39,8 @@ func (handler *Handler) setupRouter() {
 
 	router.Use(handler.CORS())
 
+	router.GET("/ws", handler.wsHandler)
+
 	authRouter := router.Group("")
 	authRouter.Use(handler.authorizationMiddleware())
 
