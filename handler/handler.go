@@ -45,24 +45,32 @@ func (handler *Handler) setupRouter() {
 	authRouter.Use(handler.authorizationMiddleware())
 
 	// User Router
-	router.POST("/login", handler.login)
-	router.POST("/user", handler.createUser)
+	{
+		router.POST("/login", handler.login)
+		router.POST("/user", handler.createUser)
 
-	authRouter.GET("/user", handler.getUser)
-	authRouter.PUT("/user", handler.updateUser)
+		authRouter.GET("/user", handler.getUser)
+		authRouter.PUT("/user", handler.updateUser)
+	}
 
 	// Friend Request Router
-	authRouter.POST("/friend/request", handler.createFriendRequest)
-	authRouter.POST("/friend/request/accept/:id", handler.acceptFriendRequest)
-	authRouter.POST("/friend/request/reject/:id", handler.rejectFriendRequest)
+	{
+		authRouter.POST("/friend/request", handler.createFriendRequest)
+		authRouter.POST("/friend/request/accept/:id", handler.acceptFriendRequest)
+		authRouter.POST("/friend/request/reject/:id", handler.rejectFriendRequest)
+	}
 
 	// Friendship Router
 	// authRouter.POST("/friendship", handler.createdFriend)
-	authRouter.GET("/friendship", handler.getFriends)
-	authRouter.DELETE("/friendship/:id", handler.deleteFriend)
+	{
+		authRouter.GET("/friendship", handler.getFriends)
+		authRouter.DELETE("/friendship/:id", handler.deleteFriend)
+	}
 
 	// Group Router
-	authRouter.POST("/group", handler.createGroup)
+	{
+		authRouter.POST("/group", handler.createGroup)
+	}
 
 	handler.Router = router
 }

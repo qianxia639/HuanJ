@@ -1,6 +1,9 @@
 -- name: ExistsFriendship :one
-SELECT COUNT(*) FROM friend_requests 
-WHERE user_id = $1 AND friend_id = $2 AND status = 2;
+SELECT EXISTS(
+    SELECT 1 FROM friend_requests
+    WHERE (user_id = $1 AND friend_id = $2 AND status = 2)
+    OR (user_id = $2 AND friend_id = $1 AND status = 2)
+);
 
 -- name: CreateFriendship :one
 INSERT INTO friendships (

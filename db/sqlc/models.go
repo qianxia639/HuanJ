@@ -68,6 +68,27 @@ type GroupMember struct {
 	JoinedAt time.Time `json:"joined_at"`
 }
 
+type Message struct {
+	// 消息ID
+	ID int32 `json:"id"`
+	// 会话ID, 用来做消息标识,格式:user/group:sender_id:receiver_id
+	SessionID string `json:"session_id"`
+	// 发送者ID
+	SenderID int32 `json:"sender_id"`
+	// 接收者ID, 用户或群组ID
+	ReceiverID int32 `json:"receiver_id"`
+	// 发送类型, 1: 私聊, 2: 群聊, 3: 心跳
+	SendType int16 `json:"send_type"`
+	// 接收者类型, 1: 用户, 2: 群组
+	ReceiverType int16 `json:"receiver_type"`
+	// 消息类型, 1: 文字, 2: 文件, 3: 图片, 4: 语音, 5: 视频
+	MessageType int16 `json:"message_type"`
+	// 消息内容
+	Content string `json:"content"`
+	// 发送时间
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type User struct {
 	// 用户ID
 	ID int32 `json:"id"`

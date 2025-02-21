@@ -53,8 +53,11 @@ func (q *Queries) DeleteFriend(ctx context.Context, arg *DeleteFriendParams) err
 }
 
 const existsFriendship = `-- name: ExistsFriendship :one
-SELECT COUNT(*) FROM friend_requests 
-WHERE user_id = $1 AND friend_id = $2 AND status = 2
+SELECT EXISTS(
+    SELECT 1 FROM friend_requests
+    WHERE (user_id = $1 AND friend_id = $2 AND status = 2)
+    OR (user_id = $2 AND friend_id = $1 AND status = 2)
+)
 `
 
 type ExistsFriendshipParams struct {
@@ -62,11 +65,11 @@ type ExistsFriendshipParams struct {
 	FriendID int32 `json:"friend_id"`
 }
 
-func (q *Queries) ExistsFriendship(ctx context.Context, arg *ExistsFriendshipParams) (int64, error) {
+func (q *Queries) ExistsFriendship(ctx context.Context, arg *ExistsFriendshipParams) (bool, error) {
 	row := q.db.QueryRow(ctx, existsFriendship, arg.UserID, arg.FriendID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const getFriendList = `-- name: GetFriendList :many

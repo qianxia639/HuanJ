@@ -41,3 +41,11 @@ func (gm *GroupMember) MarshalBinary() ([]byte, error) {
 func (gm *GroupMember) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, gm)
 }
+
+func (m *Message) MarshalBinary() ([]byte, error) {
+	return json.Marshal(m)
+}
+
+func (m *Message) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, m)
+}
