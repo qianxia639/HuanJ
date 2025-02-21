@@ -13,6 +13,7 @@ type Querier interface {
 	CreateFriendship(ctx context.Context, arg *CreateFriendshipParams) (Friendship, error)
 	CreateGroup(ctx context.Context, arg *CreateGroupParams) (Group, error)
 	CreateGroupMember(ctx context.Context, arg *CreateGroupMemberParams) (GroupMember, error)
+	CreateMessage(ctx context.Context, arg *CreateMessageParams) error
 	CreateUser(ctx context.Context, arg *CreateUserParams) (User, error)
 	DeleteFriend(ctx context.Context, arg *DeleteFriendParams) error
 	ExistsEmail(ctx context.Context, email string) (int64, error)

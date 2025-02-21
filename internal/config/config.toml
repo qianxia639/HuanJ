@@ -1,5 +1,5 @@
 [http]
-host = "192.168.172.136"
+host = "localhost"
 port = 8080
 
 [postgres]
