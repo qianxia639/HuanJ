@@ -87,6 +87,12 @@ func (handler *Handler) privateChatMessage(ctx context.Context, msg db.Message) 
 
 func (handler *Handler) groupChatMessage(ctx context.Context, msg db.Message) error {
 	// 校验群员身份
+	if exists, _ := handler.Store.ExistsGroupMember(ctx, &db.ExistsGroupMemberParams{
+		UserID:  msg.SenderID,
+		GroupID: msg.ReceiverID,
+	}); !exists {
+		return fmt.Errorf("不在群组中")
+	}
 
 	// 存储消息
 	args := &db.CreateMessageParams{
@@ -103,7 +109,7 @@ func (handler *Handler) groupChatMessage(ctx context.Context, msg db.Message) er
 	}
 
 	// 获取群成员
-	var members []int32
+	members, _ := handler.Store.GetGroupMemberList(ctx, msg.ReceiverID)
 
 	// 消息推送
 	for _, memberId := range members {

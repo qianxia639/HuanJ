@@ -19,10 +19,12 @@ type Querier interface {
 	ExistsEmail(ctx context.Context, email string) (int64, error)
 	ExistsFriendRequest(ctx context.Context, arg *ExistsFriendRequestParams) (int64, error)
 	ExistsFriendship(ctx context.Context, arg *ExistsFriendshipParams) (bool, error)
+	ExistsGroupMember(ctx context.Context, arg *ExistsGroupMemberParams) (bool, error)
 	ExistsNickname(ctx context.Context, nickname string) (int64, error)
 	ExistsUsername(ctx context.Context, username string) (int64, error)
 	GetFriendList(ctx context.Context, userID int32) ([]Friendship, error)
 	GetGroup(ctx context.Context, groupName string) (Group, error)
+	GetGroupMemberList(ctx context.Context, groupID int32) ([]GroupMember, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
 	UpdateFriendRequest(ctx context.Context, arg *UpdateFriendRequestParams) error
