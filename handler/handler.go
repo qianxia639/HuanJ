@@ -4,6 +4,7 @@ import (
 	db "Ice/db/sqlc"
 	"Ice/internal/config"
 	"Ice/internal/token"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -38,6 +39,10 @@ func (handler *Handler) setupRouter() {
 	router := gin.Default()
 
 	router.Use(handler.CORS())
+
+	router.GET("/secret", handler.secret(), func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"message": "Successfully..."})
+	})
 
 	router.GET("/ws", handler.wsHandler)
 

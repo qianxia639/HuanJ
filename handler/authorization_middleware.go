@@ -24,7 +24,7 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 
 		ua := ctx.Request.Header.Get("User-Agent")
 		if len(ua) == 0 {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Not User-Agent"})
+			ctx.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
