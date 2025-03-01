@@ -1,30 +1,22 @@
 module Ice
 
-<<<<<<< HEAD
 go 1.19
 
 // toolchain go1.22.11
-=======
-go 1.22
->>>>>>> f4a28b92984017d1e60e2fdc387226202641208d
 
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.6.0
-<<<<<<< HEAD
-	github.com/jackc/pgx/v5 v5.5.4
-	github.com/jmoiron/sqlx v1.4.0
-=======
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.7.2
->>>>>>> f4a28b92984017d1e60e2fdc387226202641208d
 	github.com/o1egl/paseto v1.0.0
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/crypto v0.23.0
+	golang.org/x/crypto v0.31.0
+	golang.org/x/net v0.33.0
 )
 
 require (
@@ -69,7 +61,6 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

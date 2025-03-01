@@ -38,7 +38,7 @@ func (handler *Handler) createGroup(ctx *gin.Context) {
 	// 		_, err := handler.Store.CreateGroupMember(ctx, &db.CreateGroupMemberParams{
 	// 			GroupID: group.ID,
 	// 			UserID:  handler.CurrentUserInfo.ID,
-	// 			Role:    GroupLeader,
+	// 			Role:    GroupOwner,
 	// 			Agreed:  true,
 	// 		})
 	// 		return err
@@ -52,11 +52,7 @@ func (handler *Handler) createGroup(ctx *gin.Context) {
 			Description: req.Description,
 		},
 		UserId: handler.CurrentUserInfo.ID,
-<<<<<<< HEAD
-		Role:   GroupLeader,
-=======
 		Role:   GroupOwner,
->>>>>>> f4a28b92984017d1e60e2fdc387226202641208d
 		Agreed: true,
 	})
 

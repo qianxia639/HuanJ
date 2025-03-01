@@ -13,11 +13,6 @@ const (
 
 // 角色
 const (
-<<<<<<< HEAD
-	GroupLeader int16 = iota + 1 // 群主
-	Admin                        // 管理员
-	Member                       // 普通成员
-=======
 	GroupOwner int16 = iota + 1 // 群主
 	Admin                       // 管理员
 	Member                      // 普通成员
@@ -43,5 +38,4 @@ const (
 	Image                  // 图片
 	Audio                  // 音频
 	Video                  // 视频
->>>>>>> f4a28b92984017d1e60e2fdc387226202641208d
 )
