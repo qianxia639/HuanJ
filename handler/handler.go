@@ -7,6 +7,8 @@ import (
 	"Ice/internal/token"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -30,6 +32,10 @@ func NewHandler(conf config.Config, store db.Store, rdb *redis.Client) *Handler 
 		Store:   store,
 		Token:   maker,
 		Redis:   rdb,
+	}
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("gender", validGender)
 	}
 
 	handler.setupRouter()

@@ -16,7 +16,7 @@ type createUserRequest struct {
 	CheckPassword string `json:"check_password" binding:"required"`
 	Email         string `json:"email" binding:"required,email"`
 	Answer        string `json:"answer" binding:"required"`
-	Gender        int8   `json:"gender" binding:"required"`
+	Gender        int16  `json:"gender" binding:"required,gender"`
 }
 
 func (h *Handler) createUser(ctx *gin.Context) {
@@ -36,7 +36,6 @@ func (h *Handler) createUser(ctx *gin.Context) {
 
 	if !utils.ValidateUsername(req.Username) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名格式不正确"})
-
 		return
 	}
 
@@ -46,11 +45,6 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		return
 	}
 
-	// 判断性别是否合法
-	if _, exists := Gender[req.Gender]; !exists {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "unknown gender"})
-		return
-	}
 	// 判断用户名是否存在
 	if i, _ := h.Store.ExistsUsername(ctx, req.Username); i > 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名已存在"})
@@ -82,7 +76,7 @@ func (h *Handler) createUser(ctx *gin.Context) {
 		Nickname: req.Username,
 		Password: hashPwd,
 		Email:    req.Email,
-		Gender:   int16(req.Gender),
+		Gender:   req.Gender,
 	}
 
 	_, err = h.Store.CreateUser(ctx, args)
