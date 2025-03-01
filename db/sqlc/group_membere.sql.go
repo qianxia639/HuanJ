@@ -42,3 +42,53 @@ func (q *Queries) CreateGroupMember(ctx context.Context, arg *CreateGroupMemberP
 	)
 	return i, err
 }
+
+const existsGroupMember = `-- name: ExistsGroupMember :one
+SELECT EXISTS (
+	SELECT 1 FROM group_members
+	WHERE group_id = $1 AND user_id = $2 AND agreed = true
+)
+`
+
+type ExistsGroupMemberParams struct {
+	GroupID int32 `json:"group_id"`
+	UserID  int32 `json:"user_id"`
+}
+
+func (q *Queries) ExistsGroupMember(ctx context.Context, arg *ExistsGroupMemberParams) (bool, error) {
+	row := q.db.QueryRow(ctx, existsGroupMember, arg.GroupID, arg.UserID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const getGroupMemberList = `-- name: GetGroupMemberList :many
+SELECT group_id, user_id, role, agreed, joined_at FROM group_members
+WHERE group_id = $1
+`
+
+func (q *Queries) GetGroupMemberList(ctx context.Context, groupID int32) ([]GroupMember, error) {
+	rows, err := q.db.Query(ctx, getGroupMemberList, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GroupMember{}
+	for rows.Next() {
+		var i GroupMember
+		if err := rows.Scan(
+			&i.GroupID,
+			&i.UserID,
+			&i.Role,
+			&i.Agreed,
+			&i.JoinedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -52,7 +52,11 @@ func (handler *Handler) createGroup(ctx *gin.Context) {
 			Description: req.Description,
 		},
 		UserId: handler.CurrentUserInfo.ID,
+<<<<<<< HEAD
 		Role:   GroupLeader,
+=======
+		Role:   GroupOwner,
+>>>>>>> f4a28b92984017d1e60e2fdc387226202641208d
 		Agreed: true,
 	})
 

@@ -35,10 +35,10 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 	}
 
 	// 检查是否已经是好友
-	if count, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{
+	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{
 		UserID:   handler.CurrentUserInfo.ID,
 		FriendID: req.FriendId,
-	}); count > 0 {
+	}); exists {
 		ctx.JSON(http.StatusOK, "已经是好友")
 		return
 	}
