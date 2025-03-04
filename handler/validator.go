@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Ice/internal/utils"
+	"Rejuv/internal/utils"
 
 	"github.com/go-playground/validator/v10"
 )

@@ -1,9 +1,9 @@
 package handler
 
 import (
-	db "Ice/db/sqlc"
-	"Ice/internal/config"
-	"Ice/internal/token"
+	db "Rejuv/db/sqlc"
+	"Rejuv/internal/config"
+	"Rejuv/internal/token"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

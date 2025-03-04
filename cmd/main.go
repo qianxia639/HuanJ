@@ -1,9 +1,9 @@
 package main
 
 import (
-	db "Ice/db/sqlc"
-	"Ice/handler"
-	"Ice/internal/config"
+	db "Rejuv/db/sqlc"
+	"Rejuv/handler"
+	"Rejuv/internal/config"
 	"context"
 	"net/http"
 	"os"
@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"Ice/internal/logs"
+	"Rejuv/internal/logs"
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

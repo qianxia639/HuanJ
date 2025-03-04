@@ -1,9 +1,9 @@
 package handler
 
 import (
-	db "Ice/db/sqlc"
-	"Ice/internal/config"
-	"Ice/internal/utils"
+	db "Rejuv/db/sqlc"
+	"Rejuv/internal/config"
+	"Rejuv/internal/utils"
 	"os"
 	"testing"
 	"time"

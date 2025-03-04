@@ -1,4 +1,4 @@
-module Ice
+module Rejuv
 
 go 1.19
 

@@ -1,7 +1,7 @@
 package token
 
 import (
-	"Ice/internal/utils"
+	"Rejuv/internal/utils"
 	"testing"
 	"time"
 

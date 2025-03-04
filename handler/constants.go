@@ -1,7 +1,7 @@
 package handler
 
 // 人机校验
-const Answer = "Weather"
+const Answer = "Rejuv"
 
 // 申请状态
 const (

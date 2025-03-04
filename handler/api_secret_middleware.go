@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"Ice/internal/logs"
-	"Ice/internal/utils"
+	"Rejuv/internal/logs"
+	"Rejuv/internal/utils"
 	"bytes"
 	"fmt"
 	"io"

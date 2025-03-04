@@ -1,7 +1,7 @@
 package config
 
 import (
-	"Ice/internal/logs"
+	"Rejuv/internal/logs"
 	"sync"
 
 	"github.com/spf13/viper"

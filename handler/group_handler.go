@@ -1,7 +1,7 @@
 package handler
 
 import (
-	db "Ice/db/sqlc"
+	db "Rejuv/db/sqlc"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

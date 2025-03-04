@@ -1,8 +1,8 @@
 package handler
 
 import (
-	db "Ice/db/sqlc"
-	"Ice/internal/utils"
+	db "Rejuv/db/sqlc"
+	"Rejuv/internal/utils"
 	"fmt"
 	"net/http"
 	"time"
