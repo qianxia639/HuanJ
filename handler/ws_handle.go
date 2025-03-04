@@ -6,13 +6,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
-
-var clients = sync.Map{} // 存储在线用户连接
 
 func (handler *Handler) wsHandler(ctx *gin.Context) {
 	upgrader := websocket.Upgrader{
@@ -33,10 +30,22 @@ func (handler *Handler) wsHandler(ctx *gin.Context) {
 
 	defer conn.Close()
 
-	// 存储连接
-	clients.Store(handler.CurrentUserInfo.ID, conn)
-	defer clients.Delete(handler.CurrentUserInfo.ID)
+	// 存储客户端连接信息到Redis
+	userKey := fmt.Sprintf("client:%s", handler.CurrentUserInfo.ID)
+	if err := handler.Redis.SAdd(ctx, userKey).Err(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
 
+	// 客户端断开时清理Redis中的连接信息
+	defer func() {
+		if err := handler.Redis.Del(ctx, userKey).Err(); err != nil {
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}()
+
+	// 处理消息
 	for {
 
 		var msg db.Message
@@ -77,11 +86,11 @@ func (handler *Handler) privateChatMessage(ctx context.Context, msg db.Message) 
 	}
 
 	// 消息推送
-	if conn, ok := clients.Load(msg.ReceiverID); ok {
-		if err := conn.(*websocket.Conn).WriteJSON(msg); err != nil {
-			return err
-		}
-	}
+	// if conn, ok := clients.Load(msg.ReceiverID); ok {
+	// 	if err := conn.(*websocket.Conn).WriteJSON(msg); err != nil {
+	// 		return err
+	// 	}
+	// }
 	return nil
 }
 
@@ -110,19 +119,19 @@ func (handler *Handler) groupChatMessage(ctx context.Context, msg db.Message) er
 
 	// 获取群成员
 	members, _ := handler.Store.GetGroupMemberList(ctx, msg.ReceiverID)
-
+	_ = members
 	// 消息推送
-	for _, memberId := range members {
-		// 可选: 是否发送给自己
-		// if memberId == msg.SenderID {
-		// 	continue
-		// }
-		if conn, ok := clients.Load(memberId); ok {
-			if err := conn.(*websocket.Conn).WriteJSON(msg); err != nil {
-				return err
-			}
-		}
-	}
+	// for _, memberId := range members {
+	// 	// 可选: 是否发送给自己
+	// 	if memberId == msg.SenderID {
+	// 		continue
+	// 	}
+	// 	if conn, ok := clients.Load(memberId); ok {
+	// 		if err := conn.(*websocket.Conn).WriteJSON(msg); err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }
