@@ -3,8 +3,13 @@ package handler
 import (
 	db "Rejuv/db/sqlc"
 	"Rejuv/internal/config"
+	"Rejuv/internal/logs"
 	"Rejuv/internal/token"
+	"crypto/ed25519"
+	"encoding/pem"
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -23,7 +28,15 @@ type Handler struct {
 
 func NewHandler(conf config.Config, store db.Store, rdb *redis.Client) *Handler {
 
-	maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
+	// maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
+
+	privateKey, publicKey, err := parseKeypair("../internal/token/private_key.pem", "../internal/token/public_key.pem")
+	if err != nil {
+		logs.Error(err)
+		return nil
+	}
+
+	maker := token.NewPasetoMakerV2(privateKey, publicKey)
 
 	handler := &Handler{
 		Conf:  conf,
@@ -84,4 +97,37 @@ func (handler *Handler) setupRouter() {
 	}
 
 	handler.Router = router
+}
+
+func parseKeypair(privateKeyPath, publicKeyPath string) (ed25519.PrivateKey, ed25519.PublicKey, error) {
+
+	// 读取私钥
+	privateKeyPem, err := os.ReadFile(privateKeyPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// 解析PEM格式的私钥
+	privateKeyBlock, _ := pem.Decode(privateKeyPem)
+	if privateKeyBlock == nil || privateKeyBlock.Type != "PRIVATE KEY" {
+		return nil, nil, fmt.Errorf("无效的PEM文件")
+	}
+
+	privateKey := ed25519.PrivateKey(privateKeyBlock.Bytes)
+
+	// 读取私钥
+	publicKeyPem, err := os.ReadFile(publicKeyPath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// 解析PEM格式的私钥
+	publicKeyBlock, _ := pem.Decode(publicKeyPem)
+	if publicKeyBlock == nil || publicKeyBlock.Type != "PUBLIC KEY" {
+		return nil, nil, fmt.Errorf("无效的PEM文件")
+	}
+
+	publicKey := ed25519.PublicKey(publicKeyBlock.Bytes)
+
+	return privateKey, publicKey, nil
 }

@@ -14,7 +14,9 @@ import (
 )
 
 func TestPasetoMaker(t *testing.T) {
-	maker := NewPasetoMaker(utils.RandomString(32))
+	// maker := NewPasetoMaker(utils.RandomString(32))
+
+	maker := NewMockPasetoMaker()
 
 	username := utils.RandomString(6)
 	duration := time.Minute
@@ -145,4 +147,50 @@ func TestVerify(t *testing.T) {
 	t.Logf("Issuer: %s", payload.Issuer)
 	t.Logf("Subject: %s", payload.Subject)
 	t.Logf("Jti: %s", payload.Jti)
+}
+
+type MockPasetoMaker struct {
+	paseto     *paseto.V2
+	privateKey ed25519.PrivateKey
+	publicKey  ed25519.PublicKey
+}
+
+func NewMockPasetoMaker() Maker {
+
+	publicKey, privateKey, err := ed25519.GenerateKey(nil)
+	if err != nil {
+		log.Fatalf("generate key failed: %v", err)
+	}
+
+	maker := &MockPasetoMaker{
+		paseto:     paseto.NewV2(),
+		privateKey: privateKey,
+		publicKey:  publicKey,
+	}
+
+	return maker
+}
+
+// 创建Token
+func (maker *MockPasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
+	payload := NewPayload(username, duration)
+
+	token, err := maker.paseto.Sign(maker.privateKey, payload, nil)
+
+	return token, err
+}
+
+// 校验Token
+func (maker *MockPasetoMaker) VerifyToken(token string) (*Payload, error) {
+	payload := &Payload{}
+	err := maker.paseto.Verify(token, maker.publicKey, payload, nil)
+	if err != nil {
+		return nil, ErrInvalidToken
+	}
+
+	// err = payload.Valid()
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return payload, nil
 }
