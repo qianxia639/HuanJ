@@ -8,7 +8,7 @@ const (
 )
 
 // 如果性别是支持的, 则返回true
-func IsSupportedGender(gender int16) bool {
+func IsSupportedGender(gender int8) bool {
 	switch gender {
 	case Male, Female, Non_Binary:
 		return true

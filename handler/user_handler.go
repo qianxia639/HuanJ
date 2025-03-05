@@ -16,7 +16,7 @@ type createUserRequest struct {
 	CheckPassword string `json:"check_password" binding:"required"`
 	Email         string `json:"email" binding:"required,email"`
 	Answer        string `json:"answer" binding:"required"`
-	Gender        int16  `json:"gender" binding:"required,gender"`
+	Gender        int8   `json:"gender" binding:"required,gender"`
 }
 
 func (h *Handler) createUser(ctx *gin.Context) {
@@ -153,7 +153,7 @@ func (h *Handler) getUser(ctx *gin.Context) {
 }
 
 type updateUserRequest struct {
-	Gender   *int16  `json:"gender"`
+	Gender   *int8  `json:"gender"`
 	Nickname *string `json:"nickname"`
 }
 

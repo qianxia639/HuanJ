@@ -21,9 +21,9 @@ type CreateMessageParams struct {
 	SessionID    string `json:"session_id"`
 	SenderID     int32  `json:"sender_id"`
 	ReceiverID   int32  `json:"receiver_id"`
-	SendType     int16  `json:"send_type"`
-	ReceiverType int16  `json:"receiver_type"`
-	MessageType  int16  `json:"message_type"`
+	SendType     int8   `json:"send_type"`
+	ReceiverType int8   `json:"receiver_type"`
+	MessageType  int8   `json:"message_type"`
 	Content      string `json:"content"`
 }
 

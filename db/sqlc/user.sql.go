@@ -23,7 +23,7 @@ type CreateUserParams struct {
 	Nickname string `json:"nickname"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
-	Gender   int16  `json:"gender"`
+	Gender   int8   `json:"gender"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg *CreateUserParams) (User, error) {
@@ -138,7 +138,7 @@ AND (gender IS DISTINCT FROM $1 OR nickname IS DISTINCT FROM $2)
 `
 
 type UpdateUserParams struct {
-	Gender   int16  `json:"gender"`
+	Gender   int8   `json:"gender"`
 	Nickname string `json:"nickname"`
 	ID       int32  `json:"id"`
 }

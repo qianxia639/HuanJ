@@ -21,7 +21,7 @@ RETURNING group_id, user_id, role, agreed, joined_at
 type CreateGroupMemberParams struct {
 	GroupID int32 `json:"group_id"`
 	UserID  int32 `json:"user_id"`
-	Role    int16 `json:"role"`
+	Role    int8  `json:"role"`
 	Agreed  bool  `json:"agreed"`
 }
 

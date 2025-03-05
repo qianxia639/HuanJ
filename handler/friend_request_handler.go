@@ -92,7 +92,7 @@ func (handler *Handler) acceptFriendRequest(ctx *gin.Context) {
 	args := db.FriendRequestTxParams{
 		UserId:       handler.CurrentUserInfo.ID,
 		FriendId:     int32(requestId),
-		Status:       int16(Accepted),
+		Status:       Accepted,
 		FromNickname: handler.CurrentUserInfo.Nickname,
 		ToNickname:   user.Nickname,
 	}
@@ -124,7 +124,7 @@ func (handler *Handler) rejectFriendRequest(ctx *gin.Context) {
 	args := &db.UpdateFriendRequestParams{
 		UserID:   handler.CurrentUserInfo.ID,
 		FriendID: int32(requestId),
-		Status:   int16(Rejected),
+		Status:   Rejected,
 	}
 	err = handler.Store.UpdateFriendRequest(ctx, args)
 	if err != nil {

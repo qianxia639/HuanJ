@@ -59,7 +59,7 @@ user_id = $1 AND friend_id = $2 AND status = 1
 type UpdateFriendRequestParams struct {
 	UserID   int32 `json:"user_id"`
 	FriendID int32 `json:"friend_id"`
-	Status   int16 `json:"status"`
+	Status   int8  `json:"status"`
 }
 
 func (q *Queries) UpdateFriendRequest(ctx context.Context, arg *UpdateFriendRequestParams) error {

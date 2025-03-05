@@ -18,7 +18,7 @@ type FriendRequest struct {
 	// 请求信息
 	RequestDesc string `json:"request_desc"`
 	// 请求状态, 1: 待处理, 2: 已同意, 3: 已拒绝, 4: 已忽略
-	Status int16 `json:"status"`
+	Status int8 `json:"status"`
 	// 请求时间
 	RequestedAt time.Time `json:"requested_at"`
 	// 变更时间
@@ -61,7 +61,7 @@ type GroupMember struct {
 	// 用户ID
 	UserID int32 `json:"user_id"`
 	// 成员角色, 1: 群主, 2: 管理员, 3: 普通成员
-	Role int16 `json:"role"`
+	Role int8 `json:"role"`
 	// 等待同意, f: 未同意, t: 已同意
 	Agreed bool `json:"agreed"`
 	// 加入时间
@@ -78,11 +78,11 @@ type Message struct {
 	// 接收者ID, 用户或群组ID
 	ReceiverID int32 `json:"receiver_id"`
 	// 发送类型, 1: 私聊, 2: 群聊, 3: 心跳
-	SendType int16 `json:"send_type"`
+	SendType int8 `json:"send_type"`
 	// 接收者类型, 1: 用户, 2: 群组
-	ReceiverType int16 `json:"receiver_type"`
+	ReceiverType int8 `json:"receiver_type"`
 	// 消息类型, 1: 文字, 2: 文件, 3: 图片, 4: 语音, 5: 视频
-	MessageType int16 `json:"message_type"`
+	MessageType int8 `json:"message_type"`
 	// 消息内容
 	Content string `json:"content"`
 	// 发送时间
@@ -101,7 +101,7 @@ type User struct {
 	// 用户邮箱
 	Email string `json:"email"`
 	// 用户性别, 1:男, 2:女, 3: 未知
-	Gender int16 `json:"gender"`
+	Gender int8 `json:"gender"`
 	// 头像URL
 	AvatarUrl string `json:"avatar_url"`
 	// 上次密码更新时间

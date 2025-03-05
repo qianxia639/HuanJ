@@ -8,7 +8,7 @@ type CreateGroupTxParams struct {
 	CreateGroupParams
 	AfterCreate func(group Group) error
 	UserId      int32
-	Role        int16
+	Role        int8
 	Agreed      bool
 }
 

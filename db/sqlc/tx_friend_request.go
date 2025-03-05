@@ -3,7 +3,7 @@ package db
 import "context"
 
 type FriendRequestTxParams struct {
-	Status       int16  `json:"status"`
+	Status       int8   `json:"status"`
 	UserId       int32  `json:"user_id"`
 	FriendId     int32  `json:"friend_id"`
 	FromNickname string `json:"from_nickname"`
