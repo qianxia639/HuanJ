@@ -9,13 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type createFriendRecordRequest struct {
+type createFriendReq struct {
 	FriendId    int32  `json:"friend_id" binding:"required"`
 	RequestDesc string `json:"request_desc"`
 }
 
+// 添加好友申请
 func (handler *Handler) createFriendRequest(ctx *gin.Context) {
-	var req createFriendRecordRequest
+	var req createFriendReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		Error(ctx, http.StatusBadRequest, err.Error())
 		return
@@ -65,17 +66,29 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 	Success(ctx, "申请成功")
 }
 
-func (handler *Handler) acceptFriendRequest(ctx *gin.Context) {
+type AcceptedOrRejectFriendRequest struct {
+	RequestId int32 `json:"request_id" binding:"required"`
+	Status    int8  `json:"status"`
+}
 
-	requestId, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
-	if err != nil {
-		Error(ctx, http.StatusBadRequest, "Invalid param")
+func (handler *Handler) pendingProcess(ctx *gin.Context) {
+
+	var req AcceptedOrRejectFriendRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+
 		return
+	}
+
+	switch req.Status {
+	case 1: // 同意
+	case 2: // 拒绝
+	default: // 无效
+
 	}
 
 	if count, _ := handler.Store.ExistsFriendRequest(ctx, &db.ExistsFriendRequestParams{
 		UserID:   handler.CurrentUserInfo.ID,
-		FriendID: int32(requestId),
+		FriendID: req.RequestId,
 	}); count < 1 {
 		Error(ctx, http.StatusInternalServerError, "处理请求不存在")
 		return
@@ -87,16 +100,16 @@ func (handler *Handler) acceptFriendRequest(ctx *gin.Context) {
 	// 	return
 	// }
 
-	user, _ := handler.Store.GetUserById(ctx, int32(requestId))
+	user, _ := handler.Store.GetUserById(ctx, req.RequestId)
 
 	args := db.FriendRequestTxParams{
 		UserId:       handler.CurrentUserInfo.ID,
-		FriendId:     int32(requestId),
+		FriendId:     req.RequestId,
 		Status:       Accepted,
 		FromNickname: handler.CurrentUserInfo.Nickname,
 		ToNickname:   user.Nickname,
 	}
-	err = handler.Store.FriendRequestTx(ctx, args)
+	err := handler.Store.FriendRequestTx(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return

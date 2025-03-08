@@ -80,8 +80,7 @@ func (handler *Handler) setupRouter() {
 	// Friend Request Router
 	{
 		authRouter.POST("/friend/request", handler.createFriendRequest)
-		authRouter.POST("/friend/request/accept/:id", handler.acceptFriendRequest)
-		authRouter.POST("/friend/request/reject/:id", handler.rejectFriendRequest)
+		authRouter.POST("/friend/request/pending", handler.pendingProcess)
 	}
 
 	// Friendship Router
