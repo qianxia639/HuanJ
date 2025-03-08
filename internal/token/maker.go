@@ -11,3 +11,4 @@ type Maker interface {
 }
 
 var _ Maker = (*PasetoMaker)(nil)
+var _ Maker = (*PasetoMakerV2)(nil)
