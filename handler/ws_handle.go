@@ -31,8 +31,8 @@ func (handler *Handler) wsHandler(ctx *gin.Context) {
 	defer conn.Close()
 
 	// 存储客户端连接信息到Redis
-	userKey := fmt.Sprintf("client:%d", handler.CurrentUserInfo.ID)
-	if err := handler.Redis.SAdd(ctx, userKey).Err(); err != nil {
+	userKey := fmt.Sprintf("ws_client:%d", handler.CurrentUserInfo.ID)
+	if err := handler.Redis.SAdd(ctx, userKey, conn.RemoteAddr().String()).Err(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}

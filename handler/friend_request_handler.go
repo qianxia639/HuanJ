@@ -22,6 +22,7 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 		return
 	}
 
+	// 校验是否是自己申请
 	if req.FriendId == handler.CurrentUserInfo.ID {
 		logs.Errorf("userId: %d, friendId: %d\n", handler.CurrentUserInfo.ID, req.FriendId)
 		Error(ctx, http.StatusUnauthorized, "不能添加自己")
@@ -79,13 +80,6 @@ func (handler *Handler) pendingProcess(ctx *gin.Context) {
 		return
 	}
 
-	switch req.Status {
-	case 1: // 同意
-	case 2: // 拒绝
-	default: // 无效
-
-	}
-
 	if count, _ := handler.Store.ExistsFriendRequest(ctx, &db.ExistsFriendRequestParams{
 		UserID:   handler.CurrentUserInfo.ID,
 		FriendID: req.RequestId,
@@ -99,6 +93,11 @@ func (handler *Handler) pendingProcess(ctx *gin.Context) {
 	// 	Error(ctx, http.StatusInternalServerError, err.Error())
 	// 	return
 	// }
+	// 获取申请记录
+	// SELECT * FROM friend_requests WHERE (sender_id = {req.RequestId} AND receiver_id = {currentUserId}) OR (sender_id = {currentUserId} AND receiver_id = {req.RequestId})
+
+	// 检查是否过期
+	// if friendRequest.Status != 1 || time.Now().After(friendRequest.ExpiredAt) {"申请已过期"}
 
 	user, _ := handler.Store.GetUserById(ctx, req.RequestId)
 
@@ -113,6 +112,13 @@ func (handler *Handler) pendingProcess(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	switch req.Status {
+	case 1: // 同意
+	case 2: // 拒绝
+	default: // 无效
+
 	}
 
 	Success(ctx, "Successfully")
