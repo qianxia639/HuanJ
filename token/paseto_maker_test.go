@@ -1,7 +1,7 @@
 package token
 
 import (
-	"Rejuv/internal/utils"
+	"Rejuv/utils"
 	"crypto/ed25519"
 	"encoding/pem"
 	"log"
@@ -22,18 +22,18 @@ func TestPasetoMaker(t *testing.T) {
 	issueAt := time.Now()
 	expired := issueAt.Add(duration)
 
-	token, err := maker.CreateToken(username, duration)
+	token, err := maker.CreateToken(Token{Username: username, Duration: duration})
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
 	payload, err := maker.VerifyToken(token)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
-	// TODO 解析出来的payload存在问题
-	// require.NotZero(t, payload.ID)
-	// require.Equal(t, username, payload.Username)
+
+	require.NotZero(t, payload.ID)
+	require.Equal(t, username, payload.Username)
 	require.WithinDuration(t, issueAt, payload.IssuedAt, time.Second)
-	require.WithinDuration(t, expired, payload.Expiration, time.Second)
+	require.WithinDuration(t, expired, payload.ExpiredAt, time.Second)
 }
 
 func TestExpiredPasetoToken(t *testing.T) {
@@ -42,7 +42,7 @@ func TestExpiredPasetoToken(t *testing.T) {
 
 	maker := NewPasetoMaker(key)
 
-	token, err := maker.CreateToken(utils.RandomString(6), -time.Minute)
+	token, err := maker.CreateToken(Token{Username: utils.RandomString(6), Duration: -time.Minute})
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
@@ -123,12 +123,10 @@ func TestVerify(t *testing.T) {
 	// }
 
 	payload := Payload{
-		ID:       "123456",
-		Username: "Test",
-		JSONToken: paseto.JSONToken{
-			IssuedAt:   time.Now(),
-			Expiration: time.Now().Add(5 * time.Minute),
-		},
+		ID:        "123456",
+		Username:  "Test",
+		IssuedAt:  time.Now(),
+		ExpiredAt: time.Now().Add(5 * time.Minute),
 	}
 
 	// 签名
@@ -170,7 +168,7 @@ func TestPasetoMakerV2(t *testing.T) {
 	issueAt := time.Now()
 	expired := issueAt.Add(duration)
 
-	token, err := maker.CreateToken(username, time.Minute)
+	token, err := maker.CreateToken(Token{Username: username, Duration: time.Minute})
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
@@ -178,8 +176,8 @@ func TestPasetoMakerV2(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 
-	// require.NotZero(t, payload.ID)
-	// require.Equal(t, username, payload.Username)
+	require.NotZero(t, payload.ID)
+	require.Equal(t, username, payload.Username)
 	require.WithinDuration(t, issueAt, payload.IssuedAt, time.Second)
-	require.WithinDuration(t, expired, payload.Expiration, time.Second)
+	require.WithinDuration(t, expired, payload.ExpiredAt, time.Second)
 }

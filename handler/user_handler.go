@@ -2,7 +2,8 @@ package handler
 
 import (
 	db "Rejuv/db/sqlc"
-	"Rejuv/internal/utils"
+	"Rejuv/token"
+	"Rejuv/utils"
 	"fmt"
 	"net/http"
 	"time"
@@ -95,12 +96,6 @@ type loginRequest struct {
 
 func (h *Handler) login(ctx *gin.Context) {
 
-	ua := ctx.Request.Header.Get("User-Agent")
-	if len(ua) == 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Can't find 'User-Agent' in header"})
-		return
-	}
-
 	var req loginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -122,7 +117,11 @@ func (h *Handler) login(ctx *gin.Context) {
 		return
 	}
 	// 生成Token
-	tokenStr, err := h.Token.CreateToken(user.Username, h.Conf.Token.AccessTokenDuration)
+	args := token.Token{
+		Username: user.Username,
+		Duration: h.Conf.Token.AccessTokenDuration,
+	}
+	tokenStr, err := h.Token.CreateToken(args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -130,7 +129,7 @@ func (h *Handler) login(ctx *gin.Context) {
 
 	loginUserInfo := db.LoginUserInfo{
 		User:      user,
-		UserAgent: ua,
+		UserAgent: ctx.Request.Header.Get("User-Agent"),
 		LoginIp:   ctx.ClientIP(),
 	}
 	key := fmt.Sprintf("user:%s", user.Username)
@@ -153,7 +152,7 @@ func (h *Handler) getUser(ctx *gin.Context) {
 }
 
 type updateUserRequest struct {
-	Gender   *int8  `json:"gender"`
+	Gender   *int8   `json:"gender"`
 	Nickname *string `json:"nickname"`
 }
 

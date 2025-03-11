@@ -1,8 +1,6 @@
 package token
 
 import (
-	"time"
-
 	"github.com/o1egl/paseto"
 )
 
@@ -25,8 +23,8 @@ func NewPasetoMaker(sysmmetricKey string) Maker {
 }
 
 // 创建Token
-func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
-	payload := NewPayload(username, duration)
+func (maker *PasetoMaker) CreateToken(args Token) (string, error) {
+	payload := NewPayload(args.Username, args.Duration)
 
 	token, err := maker.paseto.Encrypt(maker.sysmmetricKey, payload, nil)
 

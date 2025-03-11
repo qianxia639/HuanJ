@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Rejuv/internal/utils"
+	"Rejuv/utils"
 	"bytes"
 	"context"
 	"fmt"

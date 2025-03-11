@@ -2,8 +2,8 @@ package handler
 
 import (
 	db "Rejuv/db/sqlc"
-	"Rejuv/internal/config"
-	"Rejuv/internal/utils"
+	"Rejuv/config"
+	"Rejuv/utils"
 	"os"
 	"testing"
 	"time"

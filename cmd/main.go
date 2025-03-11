@@ -1,9 +1,9 @@
 package main
 
 import (
+	"Rejuv/config"
 	db "Rejuv/db/sqlc"
 	"Rejuv/handler"
-	"Rejuv/internal/config"
 	"context"
 	"net/http"
 	"os"
@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"Rejuv/internal/logs"
+	"Rejuv/logs"
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,15 +24,17 @@ import (
 
 func main() {
 
-	var cm config.ConfigManager
-	conf := cm.LoadConfig("internal/config/.")
+	conf, err := config.LoadConfig("config/.")
+	if err != nil {
+		logs.Fatalf("Can't load config: %v", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	connPool, err := pgxpool.New(ctx, conf.Postgres.DatabaseSource())
 	if err != nil {
-		logs.Fatalf("Cannot conect to database: %v\n", err)
+		logs.Fatalf("Cannot connect to database: %v\n", err)
 	}
 
 	rdb := initRedisClient(conf.Redis.Address())

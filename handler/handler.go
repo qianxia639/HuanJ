@@ -2,9 +2,9 @@ package handler
 
 import (
 	db "Rejuv/db/sqlc"
-	"Rejuv/internal/config"
-	"Rejuv/internal/logs"
-	"Rejuv/internal/token"
+	"Rejuv/config"
+	"Rejuv/logs"
+	"Rejuv/token"
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"

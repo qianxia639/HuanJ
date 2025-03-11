@@ -2,7 +2,6 @@ package token
 
 import (
 	"crypto/ed25519"
-	"time"
 
 	"github.com/o1egl/paseto"
 )
@@ -24,8 +23,8 @@ func NewPasetoMakerV2(privateKey ed25519.PrivateKey, publicKey ed25519.PublicKey
 }
 
 // 创建Token
-func (maker *PasetoMakerV2) CreateToken(username string, duration time.Duration) (string, error) {
-	payload := NewPayload(username, duration)
+func (maker *PasetoMakerV2) CreateToken(args Token) (string, error) {
+	payload := NewPayload(args.Username, args.Duration)
 
 	token, err := maker.paseto.Sign(maker.privateKey, payload, nil)
 

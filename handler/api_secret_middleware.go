@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"Rejuv/internal/logs"
-	"Rejuv/internal/utils"
+	"Rejuv/logs"
+	"Rejuv/utils"
 	"bytes"
 	"fmt"
 	"io"

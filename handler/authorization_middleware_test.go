@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Rejuv/internal/token"
+	"Rejuv/token"
 	"net/http"
 	"net/http/httptest"
 	"testing"

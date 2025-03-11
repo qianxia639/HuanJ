@@ -2,7 +2,7 @@ package handler
 
 import (
 	db "Rejuv/db/sqlc"
-	"Rejuv/internal/logs"
+	"Rejuv/logs"
 	"net/http"
 	"strconv"
 

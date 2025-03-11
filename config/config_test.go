@@ -7,8 +7,7 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	var cm ConfigManager
-	conf := cm.LoadConfig(".")
-
+	conf, err := LoadConfig(".")
+	require.NoError(t, err)
 	require.NotEmpty(t, conf)
 }
