@@ -67,6 +67,45 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 	Success(ctx, "申请成功")
 }
 
+type ProcessFriendRequest struct {
+	RequestId int32  `json:"request_id" binding:"required"`
+	Action    string `json:"status" binding:"required,oneof=accept reject"`
+	Note      string `json:"note"`
+}
+
+func (handler *Handler) processFriendRequest(ctx *gin.Context) {
+	var req ProcessFriendRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+	if count, _ := handler.Store.ExistsFriendRequest(ctx, &db.ExistsFriendRequestParams{
+		UserID:   handler.CurrentUserInfo.ID,
+		FriendID: req.RequestId,
+	}); count < 1 {
+		Error(ctx, http.StatusInternalServerError, "处理请求不存在")
+		return
+	}
+
+	switch req.Action {
+	case "accept":
+	case "reject":
+		if err := handler.Store.UpdateFriendRequest(ctx, &db.UpdateFriendRequestParams{
+			UserID:   handler.CurrentUserInfo.ID,
+			FriendID: 1,
+			Status:   3,
+		}); err != nil {
+			ctx.JSON(http.StatusInternalServerError, err)
+			return
+		}
+	default:
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+}
+
 type AcceptedOrRejectFriendRequest struct {
 	RequestId int32 `json:"request_id" binding:"required"`
 	Status    int8  `json:"status"`

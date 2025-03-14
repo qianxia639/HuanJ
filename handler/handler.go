@@ -1,8 +1,8 @@
 package handler
 
 import (
-	db "Rejuv/db/sqlc"
 	"Rejuv/config"
+	db "Rejuv/db/sqlc"
 	"Rejuv/logs"
 	"Rejuv/token"
 	"crypto/ed25519"
@@ -30,7 +30,7 @@ func NewHandler(conf config.Config, store db.Store, rdb *redis.Client) *Handler 
 
 	// maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
 
-	privateKey, publicKey, err := parseKeypair("../internal/token/private_key.pem", "../internal/token/public_key.pem")
+	privateKey, publicKey, err := parseKeypair("../token/private_key.pem", "../token/public_key.pem")
 	if err != nil {
 		logs.Error(err)
 		return nil
@@ -80,7 +80,7 @@ func (handler *Handler) setupRouter() {
 	// Friend Request Router
 	{
 		authRouter.POST("/friend/request", handler.createFriendRequest)
-		authRouter.POST("/friend/request/pending", handler.pendingProcess)
+		authRouter.POST("/friend/request/process", handler.processFriendRequest)
 	}
 
 	// Friendship Router
