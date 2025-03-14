@@ -12,17 +12,19 @@ type FriendRequest struct {
 	// 请求ID
 	ID int32 `json:"id"`
 	// 请求者ID
-	UserID int32 `json:"user_id"`
+	SenderID int32 `json:"sender_id"`
 	// 接收者ID
-	FriendID int32 `json:"friend_id"`
+	ReceiverID int32 `json:"receiver_id"`
 	// 请求信息
 	RequestDesc string `json:"request_desc"`
-	// 请求状态, 1: 待处理, 2: 已同意, 3: 已拒绝, 4: 已忽略
+	// 请求状态, 1: 待处理, 2: 已同意, 3: 已拒绝, 4: 已过期
 	Status int8 `json:"status"`
 	// 请求时间
 	RequestedAt time.Time `json:"requested_at"`
 	// 变更时间
 	UpdatedAt time.Time `json:"updated_at"`
+	// 申请过期时间
+	ExpiredAt time.Time `json:"expired_at"`
 }
 
 type Friendship struct {
@@ -31,7 +33,7 @@ type Friendship struct {
 	// 好友ID
 	FriendID int32 `json:"friend_id"`
 	// 好友备注
-	Comment string `json:"comment"`
+	Note string `json:"note"`
 	// 创建时间
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -62,10 +64,27 @@ type GroupMember struct {
 	UserID int32 `json:"user_id"`
 	// 成员角色, 1: 群主, 2: 管理员, 3: 普通成员
 	Role int8 `json:"role"`
-	// 等待同意, f: 未同意, t: 已同意
-	Agreed bool `json:"agreed"`
 	// 加入时间
 	JoinedAt time.Time `json:"joined_at"`
+}
+
+type GroupRequest struct {
+	// 请求ID
+	ID int32 `json:"id"`
+	// 请求者ID
+	SenderID int32 `json:"sender_id"`
+	// 接收者ID
+	ReceiverID int32 `json:"receiver_id"`
+	// 请求信息
+	RequestDesc string `json:"request_desc"`
+	// 请求状态, 1: 待处理, 2: 已同意, 3: 已拒绝, 4: 已忽略
+	Status int8 `json:"status"`
+	// 请求时间
+	RequestedAt time.Time `json:"requested_at"`
+	// 变更时间
+	UpdatedAt time.Time `json:"updated_at"`
+	// 申请过期时间
+	ExpiredAt time.Time `json:"expired_at"`
 }
 
 type Message struct {
@@ -77,14 +96,14 @@ type Message struct {
 	SenderID int32 `json:"sender_id"`
 	// 接收者ID, 用户或群组ID
 	ReceiverID int32 `json:"receiver_id"`
-	// 发送类型, 1: 私聊, 2: 群聊, 3: 心跳
-	SendType int8 `json:"send_type"`
-	// 接收者类型, 1: 用户, 2: 群组
-	ReceiverType int8 `json:"receiver_type"`
-	// 消息类型, 1: 文字, 2: 文件, 3: 图片, 4: 语音, 5: 视频
+	// 消息类型, 1: 私聊, 2: 群聊, 3: 心跳
 	MessageType int8 `json:"message_type"`
 	// 消息内容
 	Content string `json:"content"`
+	// 消息内容类型, 1: 文字, 2: 文件, 3: 图片, 4: 语音, 5: 视频
+	ContentType int8 `json:"content_type"`
+	// 读取状态, f: 未读, t: 已读
+	ReadStatus bool `json:"read_status"`
 	// 发送时间
 	CreatedAt time.Time `json:"created_at"`
 }

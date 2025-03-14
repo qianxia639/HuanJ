@@ -56,34 +56,34 @@ func (handler *Handler) wsHandler(ctx *gin.Context) {
 
 		logs.Infof("message: %+v", msg)
 
-		switch msg.SendType {
-		case 1: // 私聊
-		case 2: // 群聊
-		default:
-			logs.Error("未知的发送类型")
-		}
+		// switch msg.SendType {
+		// case 1: // 私聊
+		// case 2: // 群聊
+		// default:
+		// 	logs.Error("未知的发送类型")
+		// }
 	}
 }
 
 func (handler *Handler) privateChatMessage(ctx context.Context, msg db.Message) error {
 	// 验证好友关系
-	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{UserID: msg.SenderID, FriendID: msg.ReceiverID}); !exists {
+	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{SenderID: msg.SenderID, ReceiverID: msg.ReceiverID}); !exists {
 		return fmt.Errorf("非好友无法发送消息")
 	}
 
 	// 存储消息
-	args := &db.CreateMessageParams{
-		SessionID:    fmt.Sprintf("user:%d:%d", msg.SenderID, msg.ReceiverID),
-		SenderID:     msg.SenderID,
-		ReceiverID:   msg.ReceiverID,
-		SendType:     msg.SendType,
-		ReceiverType: msg.ReceiverType,
-		MessageType:  msg.MessageType,
-		Content:      msg.Content,
-	}
-	if err := handler.Store.CreateMessage(ctx, args); err != nil {
-		return err
-	}
+	// args := &db.CreateMessageParams{
+	// 	SessionID:    fmt.Sprintf("user:%d:%d", msg.SenderID, msg.ReceiverID),
+	// 	SenderID:     msg.SenderID,
+	// 	ReceiverID:   msg.ReceiverID,
+	// 	SendType:     msg.SendType,
+	// 	ReceiverType: msg.ReceiverType,
+	// 	MessageType:  msg.MessageType,
+	// 	Content:      msg.Content,
+	// }
+	// if err := handler.Store.CreateMessage(ctx, args); err != nil {
+	// 	return err
+	// }
 
 	// 消息推送
 	// if conn, ok := clients.Load(msg.ReceiverID); ok {
@@ -104,18 +104,18 @@ func (handler *Handler) groupChatMessage(ctx context.Context, msg db.Message) er
 	}
 
 	// 存储消息
-	args := &db.CreateMessageParams{
-		SessionID:    fmt.Sprintf("group:%d:%d", msg.SenderID, msg.ReceiverID),
-		SenderID:     msg.SenderID,
-		ReceiverID:   msg.ReceiverID,
-		SendType:     msg.SendType,
-		ReceiverType: msg.ReceiverType,
-		MessageType:  msg.MessageType,
-		Content:      msg.Content,
-	}
-	if err := handler.Store.CreateMessage(ctx, args); err != nil {
-		return err
-	}
+	// args := &db.CreateMessageParams{
+	// 	SessionID:    fmt.Sprintf("group:%d:%d", msg.SenderID, msg.ReceiverID),
+	// 	SenderID:     msg.SenderID,
+	// 	ReceiverID:   msg.ReceiverID,
+	// 	SendType:     msg.SendType,
+	// 	ReceiverType: msg.ReceiverType,
+	// 	MessageType:  msg.MessageType,
+	// 	Content:      msg.Content,
+	// }
+	// if err := handler.Store.CreateMessage(ctx, args); err != nil {
+	// 	return err
+	// }
 
 	// 获取群成员
 	members, _ := handler.Store.GetGroupMemberList(ctx, msg.ReceiverID)

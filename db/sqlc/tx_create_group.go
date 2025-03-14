@@ -31,7 +31,6 @@ func (store *SQLStore) CreateGroupTx(ctx context.Context, args CreateGroupTxPara
 			GroupID: result.Group.ID,
 			UserID:  args.UserId,
 			Role:    args.Role,
-			Agreed:  args.Agreed,
 		})
 
 		return err

@@ -3,68 +3,55 @@ package db
 import "context"
 
 type FriendRequestTxParams struct {
-	Status       int8   `json:"status"`
-	UserId       int32  `json:"user_id"`
-	FriendId     int32  `json:"friend_id"`
-	FromNickname string `json:"from_nickname"`
-	ToNickname   string `json:"to_nickname"`
+	Status     int8   `json:"status"`
+	SenderId   int32  `json:"sender_id"`
+	ReceiverId int32  `json:"receiver_id"`
+	FromNote   string `json:"from_note"`
+	ToNote     string `json:"to_note"`
 }
 
 func (store *SQLStore) FriendRequestTx(ctx context.Context, args FriendRequestTxParams) error {
 
 	err := store.execTx(ctx, func(q *Queries) error {
+		// 更新好友请求状态
 		err := q.UpdateFriendRequest(ctx, &UpdateFriendRequestParams{
-			UserID:   args.UserId,
-			FriendID: args.FriendId,
-			Status:   args.Status,
+			SenderID:   args.SenderId,
+			ReceiverID: args.ReceiverId,
+			Status:     args.Status,
 		})
 		if err != nil {
 			return err
 		}
 
-		if args.UserId < args.FriendId {
-			err = addFriendship(ctx, q, addFriendshipParams{
-				UserId:      args.UserId,
-				FriendId:    args.FriendId,
-				FromComment: args.ToNickname,
-				ToComment:   args.FromNickname,
-			})
-		} else {
-			err = addFriendship(ctx, q, addFriendshipParams{
-				UserId:      args.FriendId,
-				FriendId:    args.UserId,
-				FromComment: args.FromNickname,
-				ToComment:   args.ToNickname,
-			})
-		}
-
-		return err
+		// 创建双向好友关系(批量插入)
+		return createMutualFriendships(ctx, q, createMutualFriendshipParams{
+			SenderId:   args.SenderId,
+			ReceiverId: args.ReceiverId,
+			FromNote:   args.FromNote,
+			ToNote:     args.ToNote,
+		})
 	})
 	return err
 }
 
-type addFriendshipParams struct {
-	UserId      int32
-	FriendId    int32
-	FromComment string
-	ToComment   string
+const createMutilFriendships = `
+	INSERT INTO friendships (
+		user_id, friend_id, note
+	) VALUES 
+		($1, $2, $3),	-- 发送发 -> 接收方
+		($2, $1, $4)	-- 接收方 -> 发送方
+	ON CONFLICT(user_id, friend_id) DO NOTHING	-- ON CONFLICT 处理约束冲突
+`
+
+type createMutualFriendshipParams struct {
+	SenderId   int32  `json:"sender_id"`
+	ReceiverId int32  `json:"receiver_id"`
+	FromNote   string `json:"from_note"`
+	ToNote     string `json:"to_note"`
 }
 
-func addFriendship(ctx context.Context, q *Queries, args addFriendshipParams) error {
-	_, err := q.CreateFriendship(ctx, &CreateFriendshipParams{
-		UserID:   args.UserId,
-		FriendID: args.FriendId,
-		Comment:  args.FromComment,
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = q.CreateFriendship(ctx, &CreateFriendshipParams{
-		UserID:   args.FriendId,
-		FriendID: args.UserId,
-		Comment:  args.ToComment,
-	})
-
+// 创建双向好友关系(使用批量操作)
+func createMutualFriendships(ctx context.Context, q *Queries, args createMutualFriendshipParams) error {
+	_, err := q.db.Exec(ctx, createMutilFriendships, args.SenderId, args.ReceiverId, args.FromNote, args.ToNote)
 	return err
 }

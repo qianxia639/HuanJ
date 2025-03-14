@@ -11,33 +11,26 @@ import (
 
 const createGroupMember = `-- name: CreateGroupMember :one
 INSERT INTO group_members (
-	group_id, user_id, role, agreed
+	group_id, user_id, role
 ) VALUES (
-	$1, $2, $3, $4
+	$1, $2, $3
 )
-RETURNING group_id, user_id, role, agreed, joined_at
+RETURNING group_id, user_id, role, joined_at
 `
 
 type CreateGroupMemberParams struct {
 	GroupID int32 `json:"group_id"`
 	UserID  int32 `json:"user_id"`
 	Role    int8  `json:"role"`
-	Agreed  bool  `json:"agreed"`
 }
 
 func (q *Queries) CreateGroupMember(ctx context.Context, arg *CreateGroupMemberParams) (GroupMember, error) {
-	row := q.db.QueryRow(ctx, createGroupMember,
-		arg.GroupID,
-		arg.UserID,
-		arg.Role,
-		arg.Agreed,
-	)
+	row := q.db.QueryRow(ctx, createGroupMember, arg.GroupID, arg.UserID, arg.Role)
 	var i GroupMember
 	err := row.Scan(
 		&i.GroupID,
 		&i.UserID,
 		&i.Role,
-		&i.Agreed,
 		&i.JoinedAt,
 	)
 	return i, err
@@ -46,7 +39,7 @@ func (q *Queries) CreateGroupMember(ctx context.Context, arg *CreateGroupMemberP
 const existsGroupMember = `-- name: ExistsGroupMember :one
 SELECT EXISTS (
 	SELECT 1 FROM group_members
-	WHERE group_id = $1 AND user_id = $2 AND agreed = true
+	WHERE group_id = $1 AND user_id = $2
 )
 `
 
@@ -63,7 +56,7 @@ func (q *Queries) ExistsGroupMember(ctx context.Context, arg *ExistsGroupMemberP
 }
 
 const getGroupMemberList = `-- name: GetGroupMemberList :many
-SELECT group_id, user_id, role, agreed, joined_at FROM group_members
+SELECT group_id, user_id, role, joined_at FROM group_members
 WHERE group_id = $1
 `
 
@@ -80,7 +73,6 @@ func (q *Queries) GetGroupMemberList(ctx context.Context, groupID int32) ([]Grou
 			&i.GroupID,
 			&i.UserID,
 			&i.Role,
-			&i.Agreed,
 			&i.JoinedAt,
 		); err != nil {
 			return nil, err

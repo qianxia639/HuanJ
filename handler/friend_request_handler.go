@@ -3,8 +3,9 @@ package handler
 import (
 	db "Rejuv/db/sqlc"
 	"Rejuv/logs"
+	"context"
 	"net/http"
-	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,27 +37,24 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 		return
 	}
 
+	// 检查是否存在待处理的请求
+	if fr, _ := handler.Store.GetFriendRequest(ctx, &db.GetFriendRequestParams{}); fr.ID > 0 {
+		ctx.JSON(http.StatusOK, nil)
+		return
+	}
+
 	// 检查是否已经是好友
 	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{
-		UserID:   handler.CurrentUserInfo.ID,
-		FriendID: req.FriendId,
+		SenderID:   handler.CurrentUserInfo.ID,
+		ReceiverID: req.FriendId,
 	}); exists {
 		ctx.JSON(http.StatusOK, "已经是好友")
 		return
 	}
 
-	// 检查是否存在待处理的请求
-	if count, _ := handler.Store.ExistsFriendRequest(ctx, &db.ExistsFriendRequestParams{
-		UserID:   handler.CurrentUserInfo.ID,
-		FriendID: req.FriendId,
-	}); count > 0 {
-		Error(ctx, http.StatusInternalServerError, "已存在待处理的请求")
-		return
-	}
-
 	if err := handler.Store.CreateFriendRequest(ctx, &db.CreateFriendRequestParams{
-		UserID:      handler.CurrentUserInfo.ID,
-		FriendID:    req.FriendId,
+		SenderID:    handler.CurrentUserInfo.ID,
+		ReceiverID:  req.FriendId,
 		RequestDesc: req.RequestDesc,
 	}); err != nil {
 		logs.Error(err)
@@ -68,9 +66,9 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 }
 
 type ProcessFriendRequest struct {
-	RequestId int32  `json:"request_id" binding:"required"`
-	Action    string `json:"status" binding:"required,oneof=accept reject"`
-	Note      string `json:"note"`
+	SenderId int32  `json:"sender_id" binding:"required"`
+	Action   string `json:"status" binding:"required,oneof=accept reject"`
+	Note     string `json:"note"`
 }
 
 func (handler *Handler) processFriendRequest(ctx *gin.Context) {
@@ -80,22 +78,31 @@ func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 		return
 	}
 
-	if count, _ := handler.Store.ExistsFriendRequest(ctx, &db.ExistsFriendRequestParams{
-		UserID:   handler.CurrentUserInfo.ID,
-		FriendID: req.RequestId,
-	}); count < 1 {
-		Error(ctx, http.StatusInternalServerError, "处理请求不存在")
+	fr, err := handler.Store.GetFriendRequest(ctx, &db.GetFriendRequestParams{
+		SenderID:   req.SenderId,
+		ReceiverID: handler.CurrentUserInfo.ID,
+	})
+	if fr.ID < 0 {
+		logs.Errorf("get friend request error: %v", err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "不存在的申请记录"})
+		return
+	}
+
+	if time.Now().After(fr.ExpiredAt) {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "请求已过期"})
 		return
 	}
 
 	switch req.Action {
 	case "accept":
+		err := handler.acceptedUserProcess(ctx, req)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
 	case "reject":
-		if err := handler.Store.UpdateFriendRequest(ctx, &db.UpdateFriendRequestParams{
-			UserID:   handler.CurrentUserInfo.ID,
-			FriendID: 1,
-			Status:   3,
-		}); err != nil {
+		err = handler.rejectedUserProcess(ctx, req)
+		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, err)
 			return
 		}
@@ -106,89 +113,23 @@ func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 
 }
 
-type AcceptedOrRejectFriendRequest struct {
-	RequestId int32 `json:"request_id" binding:"required"`
-	Status    int8  `json:"status"`
-}
-
-func (handler *Handler) pendingProcess(ctx *gin.Context) {
-
-	var req AcceptedOrRejectFriendRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-
-		return
-	}
-
-	if count, _ := handler.Store.ExistsFriendRequest(ctx, &db.ExistsFriendRequestParams{
-		UserID:   handler.CurrentUserInfo.ID,
-		FriendID: req.RequestId,
-	}); count < 1 {
-		Error(ctx, http.StatusInternalServerError, "处理请求不存在")
-		return
-	}
-
-	// err = handler.Queries.AcceptFriendRequest(ctx, int32(requestId), handler.CurrentUserInfo.ID)
-	// if err != nil {
-	// 	Error(ctx, http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
-	// 获取申请记录
-	// SELECT * FROM friend_requests WHERE (sender_id = {req.RequestId} AND receiver_id = {currentUserId}) OR (sender_id = {currentUserId} AND receiver_id = {req.RequestId})
-
-	// 检查是否过期
-	// if friendRequest.Status != 1 || time.Now().After(friendRequest.ExpiredAt) {"申请已过期"}
-
-	user, _ := handler.Store.GetUserById(ctx, req.RequestId)
-
+// 同意申请
+func (handler *Handler) acceptedUserProcess(ctx context.Context, req ProcessFriendRequest) error {
 	args := db.FriendRequestTxParams{
-		UserId:       handler.CurrentUserInfo.ID,
-		FriendId:     req.RequestId,
-		Status:       Accepted,
-		FromNickname: handler.CurrentUserInfo.Nickname,
-		ToNickname:   user.Nickname,
+		SenderId:   req.SenderId,
+		ReceiverId: handler.CurrentUserInfo.ID,
+		Status:     Accepted,
+		FromNote:   req.Note,
+		ToNote:     handler.CurrentUserInfo.Nickname,
 	}
-	err := handler.Store.FriendRequestTx(ctx, args)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	switch req.Status {
-	case 1: // 同意
-	case 2: // 拒绝
-	default: // 无效
-
-	}
-
-	Success(ctx, "Successfully")
+	return handler.Store.FriendRequestTx(ctx, args)
 }
 
-func (handler *Handler) rejectFriendRequest(ctx *gin.Context) {
-	requestId, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
-	if err != nil {
-		Error(ctx, http.StatusBadRequest, "Invalid param")
-		return
-	}
-
-	// 判断要处理的记录是否存在
-	if count, _ := handler.Store.ExistsFriendRequest(ctx, &db.ExistsFriendRequestParams{
-		UserID:   handler.CurrentUserInfo.ID,
-		FriendID: int32(requestId),
-	}); count < 1 {
-		Error(ctx, http.StatusInternalServerError, "处理请求不存在")
-		return
-	}
-
-	args := &db.UpdateFriendRequestParams{
-		UserID:   handler.CurrentUserInfo.ID,
-		FriendID: int32(requestId),
-		Status:   Rejected,
-	}
-	err = handler.Store.UpdateFriendRequest(ctx, args)
-	if err != nil {
-		Error(ctx, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	Success(ctx, "Successfully")
+// 拒绝申请
+func (handler *Handler) rejectedUserProcess(ctx context.Context, req ProcessFriendRequest) error {
+	return handler.Store.UpdateFriendRequest(ctx, &db.UpdateFriendRequestParams{
+		SenderID:   req.SenderId,
+		ReceiverID: handler.CurrentUserInfo.ID,
+		Status:     Rejected,
+	})
 }

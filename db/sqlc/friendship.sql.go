@@ -11,26 +11,26 @@ import (
 
 const createFriendship = `-- name: CreateFriendship :one
 INSERT INTO friendships (
-    user_id, friend_id, comment
+    user_id, friend_id, note
 ) VALUES (
     $1, $2, $3
 )
-RETURNING user_id, friend_id, comment, created_at
+RETURNING user_id, friend_id, note, created_at
 `
 
 type CreateFriendshipParams struct {
 	UserID   int32  `json:"user_id"`
 	FriendID int32  `json:"friend_id"`
-	Comment  string `json:"comment"`
+	Note     string `json:"note"`
 }
 
 func (q *Queries) CreateFriendship(ctx context.Context, arg *CreateFriendshipParams) (Friendship, error) {
-	row := q.db.QueryRow(ctx, createFriendship, arg.UserID, arg.FriendID, arg.Comment)
+	row := q.db.QueryRow(ctx, createFriendship, arg.UserID, arg.FriendID, arg.Note)
 	var i Friendship
 	err := row.Scan(
 		&i.UserID,
 		&i.FriendID,
-		&i.Comment,
+		&i.Note,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -55,25 +55,25 @@ func (q *Queries) DeleteFriend(ctx context.Context, arg *DeleteFriendParams) err
 const existsFriendship = `-- name: ExistsFriendship :one
 SELECT EXISTS(
     SELECT 1 FROM friend_requests
-    WHERE (user_id = $1 AND friend_id = $2 AND status = 2)
-    OR (user_id = $2 AND friend_id = $1 AND status = 2)
+    WHERE (sender_id = $1 AND receiver_id = $2 AND status = 2)
+    OR (sender_id = $2 AND receiver_id = $1 AND status = 2)
 )
 `
 
 type ExistsFriendshipParams struct {
-	UserID   int32 `json:"user_id"`
-	FriendID int32 `json:"friend_id"`
+	SenderID   int32 `json:"sender_id"`
+	ReceiverID int32 `json:"receiver_id"`
 }
 
 func (q *Queries) ExistsFriendship(ctx context.Context, arg *ExistsFriendshipParams) (bool, error) {
-	row := q.db.QueryRow(ctx, existsFriendship, arg.UserID, arg.FriendID)
+	row := q.db.QueryRow(ctx, existsFriendship, arg.SenderID, arg.ReceiverID)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
 }
 
 const getFriendList = `-- name: GetFriendList :many
-SELECT user_id, friend_id, comment, created_at FROM friendships WHERE user_id = $1
+SELECT user_id, friend_id, note, created_at FROM friendships WHERE user_id = $1
 `
 
 func (q *Queries) GetFriendList(ctx context.Context, userID int32) ([]Friendship, error) {
@@ -88,7 +88,7 @@ func (q *Queries) GetFriendList(ctx context.Context, userID int32) ([]Friendship
 		if err := rows.Scan(
 			&i.UserID,
 			&i.FriendID,
-			&i.Comment,
+			&i.Note,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

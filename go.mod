@@ -1,8 +1,6 @@
 module Rejuv
 
-go 1.19
-
-// toolchain go1.22.11
+go 1.22
 
 require (
 	github.com/gin-gonic/gin v1.9.1
