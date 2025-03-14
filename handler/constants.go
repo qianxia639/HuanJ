@@ -8,7 +8,7 @@ const (
 	Pending  int8 = iota + 1 // 待处理
 	Accepted                 // 已同意
 	Rejected                 // 已拒绝
-	Ignored                  // 已忽略
+	Expired                  // 已忽略
 )
 
 // 角色
