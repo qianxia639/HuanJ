@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS "groups" (
     "id" SERIAL PRIMARY KEY,
     "group_name" VARCHAR(64) NOT NULL UNIQUE,
     "creator_id" INT NOT NULL,
-    "group_avatar_url" VARCHAR(512) NOT NULL DEFAULT '',
+    "avatar_url" VARCHAR(512) NOT NULL DEFAULT '',
     "description" VARCHAR(255) NOT NULL DEFAULT '',
     "max_member" INT NOT NULL DEFAULT 500,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -47,7 +47,7 @@ COMMENT ON COLUMN "groups"."group_name" IS '群组名称';
 
 COMMENT ON COLUMN "groups"."creator_id" IS '创建者ID';
 
-COMMENT ON COLUMN "groups"."group_avatar_url" IS '群组头像URL';
+COMMENT ON COLUMN "groups"."avatar_url" IS '群组头像URL';
 
 COMMENT ON COLUMN "groups"."description" IS '群组描述';
 
@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS "group_members" (
     "group_id" INT NOT NULL,
     "user_id" INT NOT NULL,
     "role"  SMALLINT NOT NULL DEFAULT 3,
+    "mute_until" TIMESTAMPTZ,
+    "nickname" VARCHAR(20) NOT NULL,
     "joined_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (group_id, user_id),
     CONSTRAINT "group_members_group_id_fk" FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE,
@@ -73,5 +75,9 @@ COMMENT ON COLUMN "group_members"."group_id" IS '群组ID';
 COMMENT ON COLUMN "group_members"."user_id" IS '用户ID';
 
 COMMENT ON COLUMN "group_members"."role" IS '成员角色, 1: 群主, 2: 管理员, 3: 普通成员';
+
+COMMENT ON COLUMN "group_members"."mute_until" IS '禁言截止时间';
+
+COMMENT ON COLUMN "group_members"."nickname" IS '群内昵称';
 
 COMMENT ON COLUMN "group_members"."joined_at" IS '加入时间';
