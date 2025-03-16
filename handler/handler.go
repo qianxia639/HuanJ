@@ -5,6 +5,7 @@ import (
 	db "Rejuv/db/sqlc"
 	"Rejuv/logs"
 	"Rejuv/token"
+	"Rejuv/ws"
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"
@@ -59,11 +60,17 @@ func (handler *Handler) setupRouter() {
 
 	router.Use(handler.CORS())
 
+	connManager := ws.NewConnectionManager()
+	go connManager.Run()
+
 	router.GET("/secret", handler.secret(), func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"message": "Successfully..."})
 	})
 
 	router.GET("/ws", handler.wsHandler)
+	router.GET("/wss", func(ctx *gin.Context) {
+		handler.wssHandler(connManager, ctx.Writer, ctx.Request)
+	})
 
 	authRouter := router.Group("")
 	authRouter.Use(handler.authorizationMiddleware())

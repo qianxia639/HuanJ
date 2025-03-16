@@ -3,6 +3,7 @@ package handler
 import (
 	db "Rejuv/db/sqlc"
 	"Rejuv/logs"
+	"Rejuv/ws"
 	"context"
 	"fmt"
 	"net/http"
@@ -10,6 +11,40 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
+
+func (handler *Handler) wssHandler(connManager *ws.ConnectionManager, w http.ResponseWriter, r *http.Request) {
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		logs.Errorf("Websocket upgrade failed, error: %v", err)
+		return
+	}
+
+	logs.Info("upgrader success")
+
+	client := &ws.WsClient{
+		UserId:      handler.CurrentUserInfo.ID,
+		ConnManager: connManager,
+		Conn:        conn,
+		Send:        make(chan []byte, 256),
+	}
+	client.ConnManager.Register <- client
+
+	defer func() {
+		client.ConnManager.Unregister <- client
+		conn.Close()
+	}()
+
+	go client.WritePump()
+	go client.ReadPump()
+}
 
 func (handler *Handler) wsHandler(ctx *gin.Context) {
 	upgrader := websocket.Upgrader{
