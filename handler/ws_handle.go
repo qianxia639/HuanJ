@@ -65,16 +65,16 @@ func (handler *Handler) wsHandler(ctx *gin.Context) {
 
 	defer conn.Close()
 
-	// 存储客户端连接信息到Redis
+	// 存储客户端连接信息到RedisClient
 	userKey := fmt.Sprintf("ws_client:%d", handler.CurrentUserInfo.ID)
-	if err := handler.Redis.SAdd(ctx, userKey, conn.RemoteAddr().String()).Err(); err != nil {
+	if err := handler.RedisClient.SAdd(ctx, userKey, conn.RemoteAddr().String()).Err(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// 客户端断开时清理Redis中的连接信息
+	// 客户端断开时清理RedisClient中的连接信息
 	defer func() {
-		if err := handler.Redis.Del(ctx, userKey).Err(); err != nil {
+		if err := handler.RedisClient.Del(ctx, userKey).Err(); err != nil {
 			ctx.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}

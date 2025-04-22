@@ -10,6 +10,7 @@ type Config struct {
 	Postgres Postgres `mapstructure:"postgres"`
 	Token    Token    `mapstructure:"token"`
 	Redis    Redis    `mapstructure:"redis"`
+	Secret   Secret   `mapstructure:"secret"`
 }
 
 type Http struct {
@@ -55,4 +56,8 @@ type Redis struct {
 
 func (r *Redis) Address() string {
 	return fmt.Sprintf("%s:%d", r.Host, r.Port)
+}
+
+type Secret struct {
+	Enable bool `mapstructure:"enable"`
 }

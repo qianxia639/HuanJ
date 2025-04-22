@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -24,26 +26,26 @@ type Handler struct {
 	Store           db.Store
 	Token           token.Maker
 	CurrentUserInfo db.LoginUserInfo
-	Redis           *redis.Client
+	RedisClient     *redis.Client
 }
 
 func NewHandler(conf config.Config, store db.Store, rdb *redis.Client) *Handler {
 
-	// maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
+	maker := token.NewPasetoMaker(conf.Token.TokenSymmetricKey)
 
-	privateKey, publicKey, err := parseKeypair("../token/private_key.pem", "../token/public_key.pem")
-	if err != nil {
-		logs.Error(err)
-		return nil
-	}
+	// privateKey, publicKey, err := parseKeypair("../token/private_key.pem", "../token/public_key.pem")
+	// if err != nil {
+	// 	logs.Error(err)
+	// 	return nil
+	// }
 
-	maker := token.NewPasetoMakerV2(privateKey, publicKey)
+	// maker := token.NewPasetoMakerV2(privateKey, publicKey)
 
 	handler := &Handler{
-		Conf:  conf,
-		Store: store,
-		Token: maker,
-		Redis: rdb,
+		Conf:        conf,
+		Store:       store,
+		Token:       maker,
+		RedisClient: rdb,
 	}
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -67,6 +69,10 @@ func (handler *Handler) setupRouter() {
 		ctx.JSON(http.StatusOK, gin.H{"message": "Successfully..."})
 	})
 
+	if handler.Conf.Secret.Enable {
+		handler.secret()
+	}
+
 	router.GET("/ws", handler.wsHandler)
 	router.GET("/wss", func(ctx *gin.Context) {
 		handler.wssHandler(connManager, ctx.Writer, ctx.Request)
@@ -88,6 +94,7 @@ func (handler *Handler) setupRouter() {
 	{
 		authRouter.POST("/friend/request", handler.createFriendRequest)
 		authRouter.POST("/friend/request/process", handler.processFriendRequest)
+		authRouter.POST("/friend/request/list", handler.listFriendRequest)
 	}
 
 	// Friendship Router
@@ -103,6 +110,18 @@ func (handler *Handler) setupRouter() {
 	}
 
 	handler.Router = router
+}
+
+func LogFuncExecTime() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		req := ctx.Request
+
+		logs.Infof("HttpUrl: %s|%s Started,IP:%s", req.Method, req.URL, ctx.RemoteIP())
+		req.URL.Path = strings.ToLower(req.URL.Path)
+		t := time.Now()
+		ctx.Next()
+		logs.Infof("HttpUrl: %s|%s Finish,Execute Time %5dms", req.Method, req.URL, time.Now().Sub(t).Milliseconds())
+	}
 }
 
 func parseKeypair(privateKeyPath, publicKeyPath string) (ed25519.PrivateKey, ed25519.PublicKey, error) {

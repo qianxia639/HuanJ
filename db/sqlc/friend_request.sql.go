@@ -56,45 +56,6 @@ func (q *Queries) GetFriendRequest(ctx context.Context, arg *GetFriendRequestPar
 	return i, err
 }
 
-const updateExpiredFriendRequest = `-- name: UpdateExpiredFriendRequest :many
-UPDATE friend_requests
-SET
-    status = $1,
-    updated_at = NOW()
-WHERE id IN (
-    SELECT id
-    FROM friend_requests
-    WHERE status = 1 AND expired_at < NOW() 
-    LIMIT $2
-) RETURNING id
-`
-
-type UpdateExpiredFriendRequestParams struct {
-	Status int8  `json:"status"`
-	Limit  int32 `json:"limit"`
-}
-
-// 用于更新已过期的申请记录
-func (q *Queries) UpdateExpiredFriendRequest(ctx context.Context, arg *UpdateExpiredFriendRequestParams) ([]int32, error) {
-	rows, err := q.db.Query(ctx, updateExpiredFriendRequest, arg.Status, arg.Limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []int32{}
-	for rows.Next() {
-		var id int32
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		items = append(items, id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const updateFriendRequest = `-- name: UpdateFriendRequest :exec
 UPDATE friend_requests
 SET

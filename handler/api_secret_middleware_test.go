@@ -41,7 +41,7 @@ func TestSecretMiddleware(t *testing.T) {
 
 		req.Header.Set("Sign", sign)
 
-		err := h.Redis.Set(context.Background(), sign, 1, 0).Err()
+		err := h.RedisClient.Set(context.Background(), sign, 1, 0).Err()
 		require.NoError(t, err)
 
 		recorder := httptest.NewRecorder()

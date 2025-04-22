@@ -35,7 +35,7 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 		}
 
 		var loginUserInfo db.LoginUserInfo
-		err = h.Redis.Get(ctx, fmt.Sprintf("user:%s", payload.Username)).Scan(&loginUserInfo)
+		err = h.RedisClient.Get(ctx, fmt.Sprintf("user:%s", payload.Username)).Scan(&loginUserInfo)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return

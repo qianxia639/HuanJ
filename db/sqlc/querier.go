@@ -26,8 +26,6 @@ type Querier interface {
 	GetGroupMemberList(ctx context.Context, groupID int32) ([]GroupMember, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
-	// 用于更新已过期的申请记录
-	UpdateExpiredFriendRequest(ctx context.Context, arg *UpdateExpiredFriendRequestParams) ([]int32, error)
 	UpdateFriendRequest(ctx context.Context, arg *UpdateFriendRequestParams) error
 	UpdateUser(ctx context.Context, arg *UpdateUserParams) error
 }

@@ -73,7 +73,7 @@ func (h *Handler) secret() gin.HandlerFunc {
 		}
 
 		// 判断签名是否已经被使用
-		exists, err := h.Redis.SetNX(ctx, signClient, 1, 10*time.Minute).Result()
+		exists, err := h.RedisClient.SetNX(ctx, signClient, 1, 10*time.Minute).Result()
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusInternalServerError)
 			return

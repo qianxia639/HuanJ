@@ -11,7 +11,7 @@ import (
 )
 
 type createFriendReq struct {
-	FriendId    int32  `json:"friend_id" binding:"required"`
+	ToUserId    int32  `json:"to_user_id" binding:"required"`
 	RequestDesc string `json:"request_desc"`
 }
 
@@ -24,14 +24,14 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 	}
 
 	// 校验是否是自己申请
-	if req.FriendId == handler.CurrentUserInfo.ID {
-		logs.Errorf("userId: %d, friendId: %d\n", handler.CurrentUserInfo.ID, req.FriendId)
+	if req.ToUserId == handler.CurrentUserInfo.ID {
+		logs.Errorf("userId: %d, friendId: %d\n", handler.CurrentUserInfo.ID, req.ToUserId)
 		Error(ctx, http.StatusUnauthorized, "不能添加自己")
 		return
 	}
 
 	// 检查请求者是否存在
-	u, _ := handler.Store.GetUserById(ctx, req.FriendId)
+	u, _ := handler.Store.GetUserById(ctx, req.ToUserId)
 	if u.ID == 0 {
 		Error(ctx, http.StatusUnauthorized, "用户不存在")
 		return
@@ -46,7 +46,7 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 	// 检查是否已经是好友
 	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{
 		SenderID:   handler.CurrentUserInfo.ID,
-		ReceiverID: req.FriendId,
+		ReceiverID: req.ToUserId,
 	}); exists {
 		ctx.JSON(http.StatusOK, "已经是好友")
 		return
@@ -54,7 +54,7 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 
 	if err := handler.Store.CreateFriendRequest(ctx, &db.CreateFriendRequestParams{
 		SenderID:    handler.CurrentUserInfo.ID,
-		ReceiverID:  req.FriendId,
+		ReceiverID:  req.ToUserId,
 		RequestDesc: req.RequestDesc,
 	}); err != nil {
 		logs.Error(err)
@@ -65,10 +65,17 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 	Success(ctx, "申请成功")
 }
 
+func (handler *Handler) listFriendRequest(ctx *gin.Context) {
+	// userId := handler.CurrentUserInfo.ID
+
+	// SELECT * FROM friend_requests WHERE to_user_id = {userId}
+	// handler.Store.GetFriendRequest()
+}
+
 type ProcessFriendRequest struct {
-	SenderId int32  `json:"sender_id" binding:"required"`
-	Action   string `json:"status" binding:"required,oneof=accept reject"`
-	Note     string `json:"note"`
+	FromUserId int32  `json:"from_user_id" binding:"required"`
+	Action     string `json:"status" binding:"required,oneof=accept reject"`
+	Note       string `json:"note"`
 }
 
 func (handler *Handler) processFriendRequest(ctx *gin.Context) {
@@ -79,7 +86,7 @@ func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 	}
 
 	fr, err := handler.Store.GetFriendRequest(ctx, &db.GetFriendRequestParams{
-		SenderID:   req.SenderId,
+		SenderID:   req.FromUserId,
 		ReceiverID: handler.CurrentUserInfo.ID,
 	})
 	if fr.ID < 0 {
@@ -116,8 +123,8 @@ func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 // 同意申请
 func (handler *Handler) acceptedUserProcess(ctx context.Context, req ProcessFriendRequest) error {
 	args := db.FriendRequestTxParams{
-		SenderId:   req.SenderId,
-		ReceiverId: handler.CurrentUserInfo.ID,
+		FromUserId: req.FromUserId,
+		ToUserId:   handler.CurrentUserInfo.ID,
 		Status:     Accepted,
 		FromNote:   req.Note,
 		ToNote:     handler.CurrentUserInfo.Nickname,
@@ -128,7 +135,7 @@ func (handler *Handler) acceptedUserProcess(ctx context.Context, req ProcessFrie
 // 拒绝申请
 func (handler *Handler) rejectedUserProcess(ctx context.Context, req ProcessFriendRequest) error {
 	return handler.Store.UpdateFriendRequest(ctx, &db.UpdateFriendRequestParams{
-		SenderID:   req.SenderId,
+		SenderID:   req.FromUserId,
 		ReceiverID: handler.CurrentUserInfo.ID,
 		Status:     Rejected,
 	})

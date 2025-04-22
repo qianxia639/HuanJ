@@ -3,7 +3,9 @@ package token
 import (
 	"Rejuv/utils"
 	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/pem"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -55,6 +57,9 @@ func TestExpiredPasetoToken(t *testing.T) {
 const (
 	privateKeyFile = "private_key.pem"
 	publicKeyFile  = "public_key.pem"
+
+	privateKeyBlockType = "PRIVATE KEY"
+	publicKeyBlockType  = "PUBLIC KEY"
 )
 
 func generateEd25519Key() {
@@ -69,19 +74,26 @@ func generateEd25519Key() {
 	log.Printf("public key: %x\n", publicKey)
 	log.Printf("private key: %x\n", privateKey)
 
+	log.Print("-----------------------------")
+
+	fmt.Println("Private Key (hex):", hex.EncodeToString(privateKey))
+	fmt.Println("Public Key (hex):", hex.EncodeToString(publicKey))
+
 	// 将私钥编码为PEM格式
-	privateKeyPem := &pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: privateKey,
-	}
-	privateKeyPemBytes := pem.EncodeToMemory(privateKeyPem)
+	// privateKeyPem := &pem.Block{
+	// 	Type:  "PRIVATE KEY",
+	// 	Bytes: privateKey,
+	// }
+	// privateKeyPemBytes := pem.EncodeToMemory(privateKeyPem)
+	privateKeyPemBytes := pemEncode(privateKey, privateKeyBlockType)
 
 	// 将公钥编码为PEM格式
-	publicKeyPem := &pem.Block{
-		Type:  "PUBLIC KEY",
-		Bytes: publicKey,
-	}
-	publicKeyPemBytes := pem.EncodeToMemory(publicKeyPem)
+	// publicKeyPem := &pem.Block{
+	// 	Type:  "PUBLIC KEY",
+	// 	Bytes: publicKey,
+	// }
+	// publicKeyPemBytes := pem.EncodeToMemory(publicKeyPem)
+	publicKeyPemBytes := pemEncode(privateKey, publicKeyBlockType)
 
 	// 将私钥和公钥保存到文件
 	err = os.WriteFile(privateKeyFile, privateKeyPemBytes, 0644)
@@ -96,8 +108,57 @@ func generateEd25519Key() {
 
 }
 
+// 将密钥编码为PEM格式
+func pemEncode(key []byte, typeLabel string) []byte {
+	block := &pem.Block{
+		Type:  typeLabel,
+		Bytes: key,
+	}
+
+	return pem.EncodeToMemory(block)
+}
+
 func TestGenerate(t *testing.T) {
 	generateEd25519Key()
+}
+
+// 从 PEM 文件加载密钥
+func TestLoadKey(t *testing.T) {
+
+	// 读取私钥文件
+	privateKeyPEM, err := os.ReadFile(privateKeyFile)
+	if err != nil {
+		fmt.Println("Error reading private key file:", err)
+		return
+	}
+
+	// 读取公钥文件
+	publicKeyPEM, err := os.ReadFile(publicKeyFile)
+	if err != nil {
+		fmt.Println("Error reading public key file:", err)
+		return
+	}
+
+	// 解码私钥
+	privateKeyBlock, _ := pem.Decode(privateKeyPEM)
+	if privateKeyBlock == nil || privateKeyBlock.Type != privateKeyBlockType {
+		fmt.Println("Invalid private key format.")
+		return
+	}
+
+	// 解码公钥
+	publicKeyBlock, _ := pem.Decode(publicKeyPEM)
+	if publicKeyBlock == nil || publicKeyBlock.Type != publicKeyBlockType {
+		fmt.Println("Invalid public key format.")
+		return
+	}
+
+	// 转换为字节数组
+	privateKey := privateKeyBlock.Bytes
+	publicKey := publicKeyBlock.Bytes
+
+	fmt.Println("Private Key (hex):", hex.EncodeToString(privateKey))
+	fmt.Println("Public Key (hex):", hex.EncodeToString(publicKey))
 }
 
 func TestVerify(t *testing.T) {

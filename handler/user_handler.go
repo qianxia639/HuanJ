@@ -127,13 +127,16 @@ func (h *Handler) login(ctx *gin.Context) {
 		return
 	}
 
+	// 邮箱脱敏
+	user.Email = utils.MaskEmail(user.Email)
+
 	loginUserInfo := db.LoginUserInfo{
 		User:      user,
 		UserAgent: ctx.Request.Header.Get("User-Agent"),
 		LoginIp:   ctx.ClientIP(),
 	}
 	key := fmt.Sprintf("user:%s", user.Username)
-	err = h.Redis.Set(ctx, key, &loginUserInfo, 24*time.Hour).Err()
+	err = h.RedisClient.Set(ctx, key, &loginUserInfo, 24*time.Hour).Err()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -146,7 +149,7 @@ func (h *Handler) login(ctx *gin.Context) {
 
 func (h *Handler) getUser(ctx *gin.Context) {
 
-	h.CurrentUserInfo.Email = utils.MaskEmail(h.CurrentUserInfo.Email)
+	// h.CurrentUserInfo.Email = utils.MaskEmail(h.CurrentUserInfo.Email)
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": h.CurrentUserInfo})
 }
@@ -199,7 +202,7 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 		return
 	}
 
-	_ = h.Redis.Set(ctx, fmt.Sprintf("user:%s", payload.Username), &h.CurrentUserInfo, 24*time.Hour)
+	_ = h.RedisClient.Set(ctx, fmt.Sprintf("user:%s", payload.Username), &h.CurrentUserInfo, 24*time.Hour)
 
 	h.CurrentUserInfo.Email = utils.MaskEmail(h.CurrentUserInfo.Email)
 

@@ -20,3 +20,6 @@ refresh_token_duration = "24h"
 [redis]
 host = "localhost"
 port = 6379
+
+[secret]
+enable = false

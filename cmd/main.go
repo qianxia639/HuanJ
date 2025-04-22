@@ -46,8 +46,6 @@ func main() {
 
 	store := db.NewStore(connPool)
 
-	go UpdateExpiredFriendRequestTicker(ctx, store)
-
 	router := handler.NewHandler(conf, store, rdb)
 
 	srv := &http.Server{
@@ -100,26 +98,4 @@ func initRedisClient(addr string) *redis.Client {
 	return redis.NewClient(&redis.Options{
 		Addr: addr,
 	})
-}
-
-func UpdateExpiredFriendRequestTicker(ctx context.Context, store db.Store) {
-	ticker := time.NewTicker(time.Hour)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			ids, err := store.UpdateExpiredFriendRequest(ctx, &db.UpdateExpiredFriendRequestParams{
-				Status: handler.Expired,
-				Limit:  10,
-			})
-			if err != nil {
-				logs.Errorf("更新任务失败: %v", err)
-			} else {
-				logs.Infof("更新任务成功执行,更新的记录ID: %v", ids)
-			}
-		case <-ctx.Done():
-			return
-		}
-	}
 }
