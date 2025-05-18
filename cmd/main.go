@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Rejuv/config"
-	db "Rejuv/db/sqlc"
-	"Rejuv/handler"
+	"HuanJ/config"
+	db "HuanJ/db/sqlc"
+	"HuanJ/handler"
 	"context"
 	"net/http"
 	"os"
@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"Rejuv/logs"
+	"HuanJ/logs"
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
