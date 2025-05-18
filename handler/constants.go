@@ -1,8 +1,5 @@
 package handler
 
-// 人机校验
-const Answer = "Rejuv"
-
 // 申请状态
 const (
 	Pending  int8 = iota + 1 // 待处理

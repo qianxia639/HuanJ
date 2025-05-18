@@ -9,7 +9,6 @@ import (
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -65,12 +64,8 @@ func (handler *Handler) setupRouter() {
 	connManager := ws.NewConnectionManager()
 	go connManager.Run()
 
-	router.GET("/secret", handler.secret(), func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"message": "Successfully..."})
-	})
-
 	if handler.Conf.Secret.Enable {
-		handler.secret()
+		router.Use(handler.secret())
 	}
 
 	router.GET("/ws", handler.wsHandler)
