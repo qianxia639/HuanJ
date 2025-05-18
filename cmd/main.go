@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -60,7 +61,7 @@ func main() {
 func shutdown(ctx context.Context, srv *http.Server) {
 	// 启动HTTP服务器
 	go func() {
-		logs.Info("Starting server...")
+		logs.Infof("Listening and serving HTTP on %s", strings.Split(srv.Addr, ":")[1])
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			logs.Fatal("Error starting server: ", err)
 		}
