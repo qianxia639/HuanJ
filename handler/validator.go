@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Rejuv/utils"
+	"HuanJ/utils"
 
 	"github.com/go-playground/validator/v10"
 )

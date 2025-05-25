@@ -1,7 +1,7 @@
 package ws
 
 import (
-	"Rejuv/logs"
+	"HuanJ/logs"
 	"context"
 	"encoding/json"
 	"fmt"

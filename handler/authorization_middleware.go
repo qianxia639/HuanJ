@@ -1,7 +1,7 @@
 package handler
 
 import (
-	db "Rejuv/db/sqlc"
+	db "HuanJ/db/sqlc"
 	"fmt"
 	"net/http"
 

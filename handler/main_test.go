@@ -1,9 +1,9 @@
 package handler
 
 import (
-	db "Rejuv/db/sqlc"
-	"Rejuv/config"
-	"Rejuv/utils"
+	db "HuanJ/db/sqlc"
+	"HuanJ/config"
+	"HuanJ/utils"
 	"os"
 	"testing"
 	"time"

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"Rejuv/token"
+	"HuanJ/token"
 	"net/http"
 	"net/http/httptest"
 	"testing"

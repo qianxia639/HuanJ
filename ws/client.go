@@ -1,7 +1,7 @@
 package ws
 
 import (
-	"Rejuv/logs"
+	"HuanJ/logs"
 	"time"
 
 	"github.com/gorilla/websocket"

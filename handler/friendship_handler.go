@@ -1,7 +1,7 @@
 package handler
 
 import (
-	db "Rejuv/db/sqlc"
+	db "HuanJ/db/sqlc"
 	"net/http"
 	"strconv"
 
@@ -111,7 +111,7 @@ func (h *Handler) deleteFriend(ctx *gin.Context) {
 	userId := h.CurrentUserInfo.ID
 	friendId, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
 	if err != nil {
-		Error(ctx, http.StatusOK, "Invalid param")
+		h.Error(ctx, http.StatusOK, "Invalid param")
 		return
 	}
 

@@ -1,9 +1,9 @@
 package handler
 
 import (
-	db "Rejuv/db/sqlc"
-	"Rejuv/logs"
-	"Rejuv/ws"
+	db "HuanJ/db/sqlc"
+	"HuanJ/logs"
+	"HuanJ/ws"
 	"context"
 	"fmt"
 	"net/http"

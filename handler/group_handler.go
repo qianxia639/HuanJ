@@ -1,7 +1,7 @@
 package handler
 
 import (
-	db "Rejuv/db/sqlc"
+	db "HuanJ/db/sqlc"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,14 +15,14 @@ type createGroupRequest struct {
 func (handler *Handler) createGroup(ctx *gin.Context) {
 	var req createGroupRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		Error(ctx, http.StatusBadRequest, "参数错误")
+		handler.Error(ctx, http.StatusBadRequest, "参数错误")
 		return
 	}
 
 	// 判断群组是否已存在
 	group, _ := handler.Store.GetGroup(ctx, req.GroupName)
 	if group.ID > 0 {
-		Error(ctx, http.StatusBadRequest, "群组名存在")
+		handler.Error(ctx, http.StatusBadRequest, "群组名存在")
 		return
 	}
 
@@ -61,5 +61,5 @@ func (handler *Handler) createGroup(ctx *gin.Context) {
 		return
 	}
 
-	Success(ctx, result)
+	handler.Obj(ctx, result)
 }

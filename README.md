@@ -1,4 +1,4 @@
-# Rejuv
+# 幻晶
 
 ## 使用的部分包列表
 - [Gin](https://github.com/gin-gonic/gin)

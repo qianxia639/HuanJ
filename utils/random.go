@@ -12,8 +12,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// RandomInt 生成 min 到 max 范围的随机数
-func RandomInt(min, max int64) int64 {
+// RandomNum 生成 min 到 max 范围的随机整数
+func RandomNum(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }
 

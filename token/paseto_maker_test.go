@@ -1,7 +1,7 @@
 package token
 
 import (
-	"Rejuv/utils"
+	"HuanJ/utils"
 	"crypto/ed25519"
 	"encoding/hex"
 	"encoding/pem"

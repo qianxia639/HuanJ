@@ -1,8 +1,8 @@
 package handler
 
 import (
-	db "Rejuv/db/sqlc"
-	"Rejuv/logs"
+	db "HuanJ/db/sqlc"
+	"HuanJ/logs"
 	"context"
 	"net/http"
 	"time"
@@ -19,21 +19,21 @@ type createFriendReq struct {
 func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 	var req createFriendReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		Error(ctx, http.StatusBadRequest, err.Error())
+		handler.Error(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// 校验是否是自己申请
 	if req.ToUserId == handler.CurrentUserInfo.ID {
 		logs.Errorf("userId: %d, friendId: %d\n", handler.CurrentUserInfo.ID, req.ToUserId)
-		Error(ctx, http.StatusUnauthorized, "不能添加自己")
+		handler.Error(ctx, http.StatusUnauthorized, "不能添加自己")
 		return
 	}
 
 	// 检查请求者是否存在
 	u, _ := handler.Store.GetUserById(ctx, req.ToUserId)
 	if u.ID == 0 {
-		Error(ctx, http.StatusUnauthorized, "用户不存在")
+		handler.Error(ctx, http.StatusUnauthorized, "用户不存在")
 		return
 	}
 
@@ -58,11 +58,11 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 		RequestDesc: req.RequestDesc,
 	}); err != nil {
 		logs.Error(err)
-		Error(ctx, http.StatusInternalServerError, "申请失败")
+		handler.Error(ctx, http.StatusInternalServerError, "申请失败")
 		return
 	}
 
-	Success(ctx, "申请成功")
+	handler.Success(ctx, "申请成功")
 }
 
 func (handler *Handler) listFriendRequest(ctx *gin.Context) {

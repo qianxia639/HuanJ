@@ -1,6 +1,8 @@
 package utils
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestValidate(t *testing.T) {
 	t.Log(ValidateUsername(RandomString(21))) // F

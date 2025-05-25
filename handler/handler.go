@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"Rejuv/config"
-	db "Rejuv/db/sqlc"
-	"Rejuv/logs"
-	"Rejuv/token"
-	"Rejuv/ws"
+	"HuanJ/config"
+	db "HuanJ/db/sqlc"
+	"HuanJ/logs"
+	"HuanJ/token"
+	"HuanJ/ws"
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"
