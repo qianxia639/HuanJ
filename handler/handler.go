@@ -83,6 +83,7 @@ func (handler *Handler) setupRouter() {
 
 		authRouter.GET("/user", handler.getUser)
 		authRouter.PUT("/user", handler.updateUser)
+		router.POST("/email/code", handler.sendEmail)
 	}
 
 	// Friend Request Router

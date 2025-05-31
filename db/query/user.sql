@@ -29,3 +29,12 @@ SET
 	updated_at = now()
 WHERE id = $3
 AND (gender IS DISTINCT FROM $1 OR nickname IS DISTINCT FROM $2);
+
+-- name: UpdatePwd :exec
+UPDATE users
+SET
+	password = $1,
+	password_changed_at = now(),
+	updated_at = now()
+WHERE
+	id = $2 AND email = $3;

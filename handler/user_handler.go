@@ -3,6 +3,7 @@ package handler
 import (
 	db "HuanJ/db/sqlc"
 	"HuanJ/logs"
+	"HuanJ/mail"
 	"HuanJ/token"
 	"HuanJ/utils"
 	"fmt"
@@ -211,4 +212,74 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 	h.CurrentUserInfo.Email = utils.MaskEmail(h.CurrentUserInfo.Email)
 
 	ctx.JSON(http.StatusOK, gin.H{"data": h.CurrentUserInfo})
+}
+
+type updatePwd struct {
+	OldPassword string `json:"old_pwd" binding:"required"`
+	NewPassword string `json:"new_pwd" binding:"required"`
+	EmailCode   string `json:"email_code" binding:"required"`
+}
+
+// 修改密码
+func (h *Handler) updatePassword(ctx *gin.Context) {
+	var req updatePwd
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		h.ParamsError(ctx)
+		return
+	}
+
+	if req.OldPassword == req.NewPassword {
+		h.ParamsError(ctx, "新旧密码不能相同")
+		return
+	}
+
+	// 校验邮箱验证码
+	ok, err := mail.VerifyEmailCode(h.RedisClient, h.CurrentUserInfo.Email, req.EmailCode, 1)
+	if err != nil {
+		h.ServerError(ctx)
+		return
+	}
+
+	if !ok {
+		h.Error(ctx, 1, "邮箱验证码错误")
+		return
+	}
+
+	//
+	if time.Since(h.CurrentUserInfo.PasswordChangedAt) < 7*24*time.Hour {
+		h.ParamsError(ctx, "两次密码修改时间间隔不得低于7天")
+		return
+	}
+
+	hashPassword, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		h.ServerError(ctx)
+		return
+	}
+
+	// 更新密码
+	_ = hashPassword
+}
+
+type sendEmail struct {
+	Email         string `json:"email" binding:"required"`           // 邮箱
+	EmailCodeType int8   `json:"email_code_type" binding:"required"` // 邮箱验证码类型
+}
+
+func (h *Handler) sendEmail(ctx *gin.Context) {
+	var req sendEmail
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		h.ParamsError(ctx)
+		return
+	}
+
+	// 发送邮箱验证码
+	err := mail.SendEmailCode(h.RedisClient, req.Email, req.EmailCodeType)
+	if err != nil {
+		logs.Error(err)
+		h.ServerError(ctx)
+		return
+	}
+
+	h.Success(ctx, "Send email success")
 }
