@@ -1,8 +1,8 @@
 -- name: ExistsFriendship :one
 SELECT EXISTS(
     SELECT 1 FROM friend_requests
-    WHERE (sender_id = $1 AND receiver_id = $2 AND status = 2)
-    OR (sender_id = $2 AND receiver_id = $1 AND status = 2)
+    WHERE (from_user_id = $1 AND to_user_id = $2 AND status = 2)
+    OR (from_user_id = $2 AND to_user_id = $1 AND status = 2)
 );
 
 -- name: CreateFriendship :one

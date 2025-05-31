@@ -21,20 +21,20 @@ SELECT * FROM users WHERE username = $1 LIMIT 1;
 -- name: GetUserById :one
 SELECT * FROM users WHERE id = $1 LIMIT 1;
 
--- name: UpdateUser :exec
+-- name: UpdateUser :one
 UPDATE users 
-SET 
-	gender = $1, 
-	nickname = $2, 
+SET
+	gender = COALESCE(sqlc.narg('gender'), gender), 
+	nickname = COALESCE(sqlc.narg('nickname'), nickname), 
 	updated_at = now()
-WHERE id = $3
-AND (gender IS DISTINCT FROM $1 OR nickname IS DISTINCT FROM $2);
+WHERE id = sqlc.arg('id')
+RETURNING *;
 
 -- name: UpdatePwd :exec
 UPDATE users
 SET
-	password = $1,
+	password = $3,
 	password_changed_at = now(),
 	updated_at = now()
 WHERE
-	id = $2 AND email = $3;
+	id = $1 AND email = $2;

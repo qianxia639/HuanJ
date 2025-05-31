@@ -11,47 +11,46 @@ import (
 
 const createFriendRequest = `-- name: CreateFriendRequest :exec
 INSERT INTO friend_requests (
-    sender_id, receiver_id, request_desc
+    from_user_id, to_user_id, request_desc
 ) VALUES (
     $1, $2, $3
 )
 `
 
 type CreateFriendRequestParams struct {
-	SenderID    int32  `json:"sender_id"`
-	ReceiverID  int32  `json:"receiver_id"`
+	FromUserID  int32  `json:"from_user_id"`
+	ToUserID    int32  `json:"to_user_id"`
 	RequestDesc string `json:"request_desc"`
 }
 
 func (q *Queries) CreateFriendRequest(ctx context.Context, arg *CreateFriendRequestParams) error {
-	_, err := q.db.Exec(ctx, createFriendRequest, arg.SenderID, arg.ReceiverID, arg.RequestDesc)
+	_, err := q.db.Exec(ctx, createFriendRequest, arg.FromUserID, arg.ToUserID, arg.RequestDesc)
 	return err
 }
 
 const getFriendRequest = `-- name: GetFriendRequest :one
-SELECT id, sender_id, receiver_id, request_desc, status, requested_at, updated_at, expired_at FROM friend_requests 
+SELECT id, from_user_id, to_user_id, request_desc, status, requested_at, updated_at FROM friend_requests 
 WHERE 
-	((sender_id = $1 AND receiver_id = $2) OR 
-	(sender_id = $2 AND receiver_id = $1)) AND status = 1
+	((from_user_id = $1 AND to_user_id = $2) OR 
+	(from_user_id = $2 AND to_user_id = $1)) AND status = 1
 `
 
 type GetFriendRequestParams struct {
-	SenderID   int32 `json:"sender_id"`
-	ReceiverID int32 `json:"receiver_id"`
+	FromUserID int32 `json:"from_user_id"`
+	ToUserID   int32 `json:"to_user_id"`
 }
 
 func (q *Queries) GetFriendRequest(ctx context.Context, arg *GetFriendRequestParams) (FriendRequest, error) {
-	row := q.db.QueryRow(ctx, getFriendRequest, arg.SenderID, arg.ReceiverID)
+	row := q.db.QueryRow(ctx, getFriendRequest, arg.FromUserID, arg.ToUserID)
 	var i FriendRequest
 	err := row.Scan(
 		&i.ID,
-		&i.SenderID,
-		&i.ReceiverID,
+		&i.FromUserID,
+		&i.ToUserID,
 		&i.RequestDesc,
 		&i.Status,
 		&i.RequestedAt,
 		&i.UpdatedAt,
-		&i.ExpiredAt,
 	)
 	return i, err
 }
@@ -62,16 +61,16 @@ SET
 	status  = $3,
 	updated_at = now()
 WHERE
-sender_id = $1 AND receiver_id = $2 AND status = 1
+from_user_id = $1 AND to_user_id = $2 AND status = 1
 `
 
 type UpdateFriendRequestParams struct {
-	SenderID   int32 `json:"sender_id"`
-	ReceiverID int32 `json:"receiver_id"`
+	FromUserID int32 `json:"from_user_id"`
+	ToUserID   int32 `json:"to_user_id"`
 	Status     int8  `json:"status"`
 }
 
 func (q *Queries) UpdateFriendRequest(ctx context.Context, arg *UpdateFriendRequestParams) error {
-	_, err := q.db.Exec(ctx, updateFriendRequest, arg.SenderID, arg.ReceiverID, arg.Status)
+	_, err := q.db.Exec(ctx, updateFriendRequest, arg.FromUserID, arg.ToUserID, arg.Status)
 	return err
 }

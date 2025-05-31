@@ -25,8 +25,6 @@ COMMENT ON COLUMN "messages"."content_type" IS '消息内容类型, 1: 文字, 2
 
 COMMENT ON COLUMN "messages"."message_status" IS '消息状态, 1: 已发送, 2: 已读, 3: 删除, 4: 撤回';
 
-COMMENT ON COLUMN "messages"."is_read" IS '读取状态, f: 未读, t: 已读';
-
 COMMENT ON COLUMN "messages"."created_at" IS '发送时间';
 
 COMMENT ON COLUMN "messages"."updated_at" IS '更新时间';

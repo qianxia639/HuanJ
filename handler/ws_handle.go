@@ -102,7 +102,7 @@ func (handler *Handler) wsHandler(ctx *gin.Context) {
 
 func (handler *Handler) privateChatMessage(ctx context.Context, msg db.Message) error {
 	// 验证好友关系
-	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{SenderID: msg.SenderID, ReceiverID: msg.ReceiverID}); !exists {
+	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{FromUserID: msg.SenderID, ToUserID: msg.ReceiverID}); !exists {
 		return fmt.Errorf("非好友无法发送消息")
 	}
 

@@ -11,56 +11,48 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type createUserRequest struct {
-	Username      string `json:"username" binding:"required"`       // 用户名
-	Password      string `json:"password" binding:"required"`       // 用户密码
-	CheckPassword string `json:"check_password" binding:"required"` // 确认密码
-	Email         string `json:"email" binding:"required,email"`    // 用户邮箱
-	Gender        int8   `json:"gender" binding:"required,gender"`  // 用户性别
+	Username        string `json:"username" binding:"required"`         // 用户名
+	Password        string `json:"password" binding:"required"`         // 用户密码
+	ConfirmPassword string `json:"confirm_password" binding:"required"` // 确认密码
+	Email           string `json:"email" binding:"required,email"`      // 用户邮箱
+	Gender          int8   `json:"gender" binding:"required,gender"`    // 用户性别
 }
 
 func (h *Handler) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		// ctx.JSON(http.StatusBadRequest, gin.H{
-		// 	"message": "参数错误",
-		// 	"error":   err.Error(),
-		// })
 		h.ParamsError(ctx)
 		return
 	}
 
 	if !utils.ValidatePassword(req.Password) {
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "密码格式不正确"})
 		h.ParamsError(ctx, "密码格式不正确")
 		return
 	}
 
 	if !utils.ValidateUsername(req.Username) {
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名格式不正确"})
 		h.ParamsError(ctx, "用户名格式不正确")
 		return
 	}
 
 	// 判断密码是否一致
-	if req.Password != req.CheckPassword {
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "密码不一致"})
-		h.ParamsError(ctx, "确认密码不一致")
+	if req.Password != req.ConfirmPassword {
+		h.ParamsError(ctx, "密码不一致")
 		return
 	}
 
 	// 判断用户名是否存在
 	if i, _ := h.Store.ExistsUsername(ctx, req.Username); i > 0 {
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名已存在"})
 		h.ParamsError(ctx, "用户名已存在")
 		return
 	}
 
 	// 判断邮箱是否存在
 	if i, _ := h.Store.ExistsEmail(ctx, req.Email); i > 0 {
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已存在"})
 		h.ParamsError(ctx, "邮箱已存在")
 		return
 	}
@@ -68,7 +60,6 @@ func (h *Handler) createUser(ctx *gin.Context) {
 	// 密码加密
 	hashPwd, err := utils.HashPassword(req.Password)
 	if err != nil {
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		h.ParamsError(ctx)
 		return
 	}
@@ -84,13 +75,11 @@ func (h *Handler) createUser(ctx *gin.Context) {
 
 	_, err = h.Store.CreateUser(ctx, args)
 	if err != nil {
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "insert error", "error": err.Error()})
 		logs.Errorf("Create User Fail,Err:[%v]", err)
 		h.ServerError(ctx)
 		return
 	}
 
-	// ctx.JSON(http.StatusOK, gin.H{"message": "successfully"})
 	h.Success(ctx, "Create Success")
 }
 
@@ -110,8 +99,6 @@ func (h *Handler) login(ctx *gin.Context) {
 	// 判断用户是否存在
 	user, err := h.Store.GetUser(ctx, req.Username)
 	if user.ID == 0 {
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存", "error": err.Error()})
-		// ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户名不存存"})
 		h.Error(ctx, http.StatusUnauthorized, "用户名不存在")
 		return
 	}
@@ -148,7 +135,6 @@ func (h *Handler) login(ctx *gin.Context) {
 	}
 
 	// 返回结果
-	// ctx.JSON(http.StatusOK, gin.H{"message": "successfullt", "data": tokenStr, "user": user})
 	h.Success(ctx, tokenStr)
 }
 
@@ -184,19 +170,20 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户昵称存在"})
 			return
 		}
-		h.CurrentUserInfo.Nickname = *req.Nickname
-	}
-
-	if req.Gender != nil {
-		h.CurrentUserInfo.Gender = *req.Gender
 	}
 
 	args := &db.UpdateUserParams{
-		Gender:   h.CurrentUserInfo.Gender,
-		ID:       h.CurrentUserInfo.ID,
-		Nickname: h.CurrentUserInfo.Nickname,
+		ID: h.CurrentUserInfo.ID,
+		Gender: pgtype.Int2{
+			Int16: int16(*req.Gender),
+			Valid: req.Gender != nil,
+		},
+		Nickname: pgtype.Text{
+			String: *req.Nickname,
+			Valid:  req.Nickname != nil,
+		},
 	}
-	err = h.Store.UpdateUser(ctx, args)
+	h.CurrentUserInfo.User, err = h.Store.UpdateUser(ctx, args)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Update user failed", "error": err.Error()})
 		return
@@ -258,7 +245,17 @@ func (h *Handler) updatePassword(ctx *gin.Context) {
 	}
 
 	// 更新密码
-	_ = hashPassword
+	err = h.Store.UpdatePwd(ctx, &db.UpdatePwdParams{
+		ID:       h.CurrentUserInfo.ID,
+		Email:    h.CurrentUserInfo.Email,
+		Password: hashPassword,
+	})
+	if err != nil {
+		h.ServerError(ctx)
+		return
+	}
+
+	h.Success(ctx, "Update success")
 }
 
 type sendEmail struct {

@@ -45,16 +45,16 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 
 	// 检查是否已经是好友
 	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{
-		SenderID:   handler.CurrentUserInfo.ID,
-		ReceiverID: req.ToUserId,
+		FromUserID: handler.CurrentUserInfo.ID,
+		ToUserID:   req.ToUserId,
 	}); exists {
 		ctx.JSON(http.StatusOK, "已经是好友")
 		return
 	}
 
 	if err := handler.Store.CreateFriendRequest(ctx, &db.CreateFriendRequestParams{
-		SenderID:    handler.CurrentUserInfo.ID,
-		ReceiverID:  req.ToUserId,
+		FromUserID:  handler.CurrentUserInfo.ID,
+		ToUserID:    req.ToUserId,
 		RequestDesc: req.RequestDesc,
 	}); err != nil {
 		logs.Error(err)
@@ -86,8 +86,8 @@ func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 	}
 
 	fr, err := handler.Store.GetFriendRequest(ctx, &db.GetFriendRequestParams{
-		SenderID:   req.FromUserId,
-		ReceiverID: handler.CurrentUserInfo.ID,
+		FromUserID: req.FromUserId,
+		ToUserID:   handler.CurrentUserInfo.ID,
 	})
 	if fr.ID < 0 {
 		logs.Errorf("get friend request error: %v", err.Error())
@@ -95,7 +95,7 @@ func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 		return
 	}
 
-	if time.Now().After(fr.ExpiredAt) {
+	if time.Now().After(fr.RequestedAt) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "请求已过期"})
 		return
 	}
@@ -135,8 +135,8 @@ func (handler *Handler) acceptedUserProcess(ctx context.Context, req ProcessFrie
 // 拒绝申请
 func (handler *Handler) rejectedUserProcess(ctx context.Context, req ProcessFriendRequest) error {
 	return handler.Store.UpdateFriendRequest(ctx, &db.UpdateFriendRequestParams{
-		SenderID:   req.FromUserId,
-		ReceiverID: handler.CurrentUserInfo.ID,
+		FromUserID: req.FromUserId,
+		ToUserID:   handler.CurrentUserInfo.ID,
 		Status:     Rejected,
 	})
 }

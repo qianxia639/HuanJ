@@ -27,7 +27,8 @@ type Querier interface {
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
 	UpdateFriendRequest(ctx context.Context, arg *UpdateFriendRequestParams) error
-	UpdateUser(ctx context.Context, arg *UpdateUserParams) error
+	UpdatePwd(ctx context.Context, arg *UpdatePwdParams) error
+	UpdateUser(ctx context.Context, arg *UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -15,7 +15,7 @@ INSERT INTO group_members (
 ) VALUES (
 	$1, $2, $3
 )
-RETURNING group_id, user_id, role, joined_at
+RETURNING group_id, user_id, role, mute_until, nickname, joined_at
 `
 
 type CreateGroupMemberParams struct {
@@ -31,6 +31,8 @@ func (q *Queries) CreateGroupMember(ctx context.Context, arg *CreateGroupMemberP
 		&i.GroupID,
 		&i.UserID,
 		&i.Role,
+		&i.MuteUntil,
+		&i.Nickname,
 		&i.JoinedAt,
 	)
 	return i, err
@@ -56,7 +58,7 @@ func (q *Queries) ExistsGroupMember(ctx context.Context, arg *ExistsGroupMemberP
 }
 
 const getGroupMemberList = `-- name: GetGroupMemberList :many
-SELECT group_id, user_id, role, joined_at FROM group_members
+SELECT group_id, user_id, role, mute_until, nickname, joined_at FROM group_members
 WHERE group_id = $1
 `
 
@@ -73,6 +75,8 @@ func (q *Queries) GetGroupMemberList(ctx context.Context, groupID int32) ([]Grou
 			&i.GroupID,
 			&i.UserID,
 			&i.Role,
+			&i.MuteUntil,
+			&i.Nickname,
 			&i.JoinedAt,
 		); err != nil {
 			return nil, err

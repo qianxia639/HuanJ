@@ -15,8 +15,8 @@ func (store *SQLStore) FriendRequestTx(ctx context.Context, args FriendRequestTx
 	err := store.execTx(ctx, func(q *Queries) error {
 		// 更新好友请求状态
 		err := q.UpdateFriendRequest(ctx, &UpdateFriendRequestParams{
-			SenderID:   args.FromUserId,
-			ReceiverID: args.ToUserId,
+			FromUserID: args.FromUserId,
+			ToUserID:   args.ToUserId,
 			Status:     args.Status,
 		})
 		if err != nil {

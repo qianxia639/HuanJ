@@ -14,7 +14,7 @@ INSERT INTO groups (
 	group_name, creator_id, description
 ) VALUES (
 	$1, $2, $3
-) RETURNING id, group_name, creator_id, group_avatar_url, description, max_member, created_at, updated_at
+) RETURNING id, group_name, creator_id, avatar_url, description, max_member, created_at, updated_at
 `
 
 type CreateGroupParams struct {
@@ -30,7 +30,7 @@ func (q *Queries) CreateGroup(ctx context.Context, arg *CreateGroupParams) (Grou
 		&i.ID,
 		&i.GroupName,
 		&i.CreatorID,
-		&i.GroupAvatarUrl,
+		&i.AvatarUrl,
 		&i.Description,
 		&i.MaxMember,
 		&i.CreatedAt,
@@ -40,7 +40,7 @@ func (q *Queries) CreateGroup(ctx context.Context, arg *CreateGroupParams) (Grou
 }
 
 const getGroup = `-- name: GetGroup :one
-SELECT id, group_name, creator_id, group_avatar_url, description, max_member, created_at, updated_at FROM groups WHERE group_name = $1 LIMIT 1
+SELECT id, group_name, creator_id, avatar_url, description, max_member, created_at, updated_at FROM groups WHERE group_name = $1 LIMIT 1
 `
 
 func (q *Queries) GetGroup(ctx context.Context, groupName string) (Group, error) {
@@ -50,7 +50,7 @@ func (q *Queries) GetGroup(ctx context.Context, groupName string) (Group, error)
 		&i.ID,
 		&i.GroupName,
 		&i.CreatorID,
-		&i.GroupAvatarUrl,
+		&i.AvatarUrl,
 		&i.Description,
 		&i.MaxMember,
 		&i.CreatedAt,

@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -15,7 +17,7 @@ INSERT INTO users (
 ) VALUES (
 	$1, $2, $3, $4, $5
 )
-RETURNING id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at
+RETURNING id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio
 `
 
 type CreateUserParams struct {
@@ -46,6 +48,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg *CreateUserParams) (User, 
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Phone,
+		&i.Birthday,
+		&i.Bio,
 	)
 	return i, err
 }
@@ -84,7 +89,7 @@ func (q *Queries) ExistsUsername(ctx context.Context, username string) (int64, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at FROM users WHERE username = $1 LIMIT 1
+SELECT id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio FROM users WHERE username = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
@@ -101,12 +106,15 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Phone,
+		&i.Birthday,
+		&i.Bio,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at FROM users WHERE id = $1 LIMIT 1
+SELECT id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio FROM users WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
@@ -123,27 +131,67 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Phone,
+		&i.Birthday,
+		&i.Bio,
 	)
 	return i, err
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updatePwd = `-- name: UpdatePwd :exec
+UPDATE users
+SET
+	password = $3,
+	password_changed_at = now(),
+	updated_at = now()
+WHERE
+	id = $1 AND email = $2
+`
+
+type UpdatePwdParams struct {
+	ID       int32  `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) UpdatePwd(ctx context.Context, arg *UpdatePwdParams) error {
+	_, err := q.db.Exec(ctx, updatePwd, arg.ID, arg.Email, arg.Password)
+	return err
+}
+
+const updateUser = `-- name: UpdateUser :one
 UPDATE users 
-SET 
-	gender = $1, 
-	nickname = $2, 
+SET
+	gender = COALESCE($1, gender), 
+	nickname = COALESCE($2, nickname), 
 	updated_at = now()
 WHERE id = $3
-AND (gender IS DISTINCT FROM $1 OR nickname IS DISTINCT FROM $2)
+RETURNING id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio
 `
 
 type UpdateUserParams struct {
-	Gender   int8   `json:"gender"`
-	Nickname string `json:"nickname"`
-	ID       int32  `json:"id"`
+	Gender   pgtype.Int2 `json:"gender"`
+	Nickname pgtype.Text `json:"nickname"`
+	ID       int32       `json:"id"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) error {
-	_, err := q.db.Exec(ctx, updateUser, arg.Gender, arg.Nickname, arg.ID)
-	return err
+func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUser, arg.Gender, arg.Nickname, arg.ID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Nickname,
+		&i.Password,
+		&i.Email,
+		&i.Gender,
+		&i.AvatarUrl,
+		&i.PasswordChangedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Phone,
+		&i.Birthday,
+		&i.Bio,
+	)
+	return i, err
 }
