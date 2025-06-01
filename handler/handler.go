@@ -76,6 +76,11 @@ func (handler *Handler) setupRouter() {
 	authRouter := router.Group("")
 	authRouter.Use(handler.authorizationMiddleware())
 
+	// Router
+	{
+		router.PUT("/reset/pwd", handler.resetPwd)
+	}
+
 	// User Router
 	{
 		router.POST("/login", handler.login)
