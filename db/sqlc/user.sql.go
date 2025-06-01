@@ -141,21 +141,20 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 const updatePwd = `-- name: UpdatePwd :exec
 UPDATE users
 SET
-	password = $3,
+	password = $2,
 	password_changed_at = now(),
 	updated_at = now()
 WHERE
-	id = $1 AND email = $2
+	email = $1
 `
 
 type UpdatePwdParams struct {
-	ID       int32  `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 func (q *Queries) UpdatePwd(ctx context.Context, arg *UpdatePwdParams) error {
-	_, err := q.db.Exec(ctx, updatePwd, arg.ID, arg.Email, arg.Password)
+	_, err := q.db.Exec(ctx, updatePwd, arg.Email, arg.Password)
 	return err
 }
 

@@ -33,8 +33,8 @@ RETURNING *;
 -- name: UpdatePwd :exec
 UPDATE users
 SET
-	password = $3,
+	password = $2,
 	password_changed_at = now(),
 	updated_at = now()
 WHERE
-	id = $1 AND email = $2;
+	email = $1;
