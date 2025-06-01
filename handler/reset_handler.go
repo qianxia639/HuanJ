@@ -60,7 +60,6 @@ func (h *Handler) resetPwd(ctx *gin.Context) {
 	}
 
 	_ = h.Store.UpdatePwd(ctx, &db.UpdatePwdParams{
-		ID:       h.CurrentUserInfo.ID,
 		Email:    req.Email,
 		Password: hashPwd,
 	})

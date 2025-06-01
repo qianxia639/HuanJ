@@ -246,7 +246,6 @@ func (h *Handler) updatePassword(ctx *gin.Context) {
 
 	// 更新密码
 	err = h.Store.UpdatePwd(ctx, &db.UpdatePwdParams{
-		ID:       h.CurrentUserInfo.ID,
 		Email:    h.CurrentUserInfo.Email,
 		Password: hashPassword,
 	})
