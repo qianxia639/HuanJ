@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"HuanJ/config"
 	db "HuanJ/db/sqlc"
 	"HuanJ/logs"
 	"HuanJ/mail"
@@ -43,7 +44,7 @@ func (h *Handler) resetPwd(ctx *gin.Context) {
 	}
 
 	// 校验邮件验证码是否正确
-	ok, err := mail.VerifyEmailCode(h.RedisClient, req.Email, req.EmailCode, 2)
+	ok, err := mail.VerifyEmailCode(h.RedisClient, req.Email, req.EmailCode, config.EmailCodeResetPwd)
 	if err != nil {
 		h.ServerError(ctx)
 		return

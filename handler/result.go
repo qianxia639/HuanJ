@@ -50,6 +50,5 @@ func (h Handler) ParamsError(ctx *gin.Context, msg ...string) {
 		result = Result{OK: false, Msg: msg[0]}
 	}
 
-	// result := Result{OK: false, Msg: "参数错误"}
 	ctx.JSON(http.StatusBadRequest, result)
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"HuanJ/config"
 	db "HuanJ/db/sqlc"
 	"HuanJ/logs"
 	"context"
@@ -125,7 +126,7 @@ func (handler *Handler) acceptedUserProcess(ctx context.Context, req ProcessFrie
 	args := db.FriendRequestTxParams{
 		FromUserId: req.FromUserId,
 		ToUserId:   handler.CurrentUserInfo.ID,
-		Status:     Accepted,
+		Status:     config.Accepted,
 		FromNote:   req.Note,
 		ToNote:     handler.CurrentUserInfo.Nickname,
 	}
@@ -137,6 +138,6 @@ func (handler *Handler) rejectedUserProcess(ctx context.Context, req ProcessFrie
 	return handler.Store.UpdateFriendRequest(ctx, &db.UpdateFriendRequestParams{
 		FromUserID: req.FromUserId,
 		ToUserID:   handler.CurrentUserInfo.ID,
-		Status:     Rejected,
+		Status:     config.Rejected,
 	})
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"HuanJ/config"
 	db "HuanJ/db/sqlc"
 	"HuanJ/logs"
 	"HuanJ/mail"
@@ -127,7 +128,7 @@ func (h *Handler) login(ctx *gin.Context) {
 		UserAgent: ctx.Request.Header.Get("User-Agent"),
 		LoginIp:   ctx.ClientIP(),
 	}
-	key := fmt.Sprintf("user:%s", user.Username)
+	key := "user:" + user.Username
 	err = h.RedisClient.Set(ctx, key, &loginUserInfo, 24*time.Hour).Err()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -202,9 +203,9 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 }
 
 type updatePwd struct {
-	OldPassword string `json:"old_pwd" binding:"required"`
-	NewPassword string `json:"new_pwd" binding:"required"`
-	EmailCode   string `json:"email_code" binding:"required"`
+	OldPassword string `json:"old_pwd" binding:"required"`    // 旧密码
+	NewPassword string `json:"new_pwd" binding:"required"`    // 新密码
+	EmailCode   string `json:"email_code" binding:"required"` // 邮箱验证码
 }
 
 // 修改密码
@@ -221,7 +222,7 @@ func (h *Handler) updatePassword(ctx *gin.Context) {
 	}
 
 	// 校验邮箱验证码
-	ok, err := mail.VerifyEmailCode(h.RedisClient, h.CurrentUserInfo.Email, req.EmailCode, 1)
+	ok, err := mail.VerifyEmailCode(h.RedisClient, h.CurrentUserInfo.Email, req.EmailCode, config.EmailCodeResetPwd)
 	if err != nil {
 		h.ServerError(ctx)
 		return
@@ -253,6 +254,9 @@ func (h *Handler) updatePassword(ctx *gin.Context) {
 		h.ServerError(ctx)
 		return
 	}
+	// TODO 是否有必要删除缓存
+	// key := "user:" + h.CurrentUserInfo.Username
+	// _ = h.RedisClient.Del(ctx, key).Err()
 
 	h.Success(ctx, "Update success")
 }

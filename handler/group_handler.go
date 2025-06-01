@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"HuanJ/config"
 	db "HuanJ/db/sqlc"
 	"net/http"
 
@@ -52,7 +53,7 @@ func (handler *Handler) createGroup(ctx *gin.Context) {
 			Description: req.Description,
 		},
 		UserId: handler.CurrentUserInfo.ID,
-		Role:   GroupOwner,
+		Role:   config.GroupOwner,
 		Agreed: true,
 	})
 

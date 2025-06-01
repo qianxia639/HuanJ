@@ -79,6 +79,7 @@ func (handler *Handler) setupRouter() {
 	// Router
 	{
 		router.PUT("/reset/pwd", handler.resetPwd)
+		router.POST("/email/code", handler.sendEmail)
 	}
 
 	// User Router
@@ -88,7 +89,7 @@ func (handler *Handler) setupRouter() {
 
 		authRouter.GET("/user", handler.getUser)
 		authRouter.PUT("/user", handler.updateUser)
-		router.POST("/email/code", handler.sendEmail)
+		authRouter.PUT("/user/pwd", handler.updatePassword)
 	}
 
 	// Friend Request Router
