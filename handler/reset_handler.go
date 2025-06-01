@@ -3,6 +3,7 @@ package handler
 import (
 	db "HuanJ/db/sqlc"
 	"HuanJ/logs"
+	"HuanJ/mail"
 	"HuanJ/utils"
 	"net/http"
 
@@ -42,16 +43,16 @@ func (h *Handler) resetPwd(ctx *gin.Context) {
 	}
 
 	// 校验邮件验证码是否正确
-	// ok, err := mail.VerifyEmailCode(h.RedisClient, req.Email, req.EmailCode, 2)
-	// if err != nil {
-	// 	h.ServerError(ctx)
-	// 	return
-	// }
+	ok, err := mail.VerifyEmailCode(h.RedisClient, req.Email, req.EmailCode, 2)
+	if err != nil {
+		h.ServerError(ctx)
+		return
+	}
 
-	// if !ok {
-	// 	h.ParamsError(ctx, "邮箱验证码错误或过期")
-	// 	return
-	// }
+	if !ok {
+		h.ParamsError(ctx, "邮箱验证码错误或过期")
+		return
+	}
 
 	hashPwd, err := utils.HashPassword(req.ResetPwd)
 	if err != nil {

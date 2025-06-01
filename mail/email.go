@@ -35,9 +35,9 @@ func SendEmailCode(rdb *redis.Client, email string, emailCodeType int8) error {
 	return nil
 }
 
-// Deprecated
-func GetEmailCode(rdb *redis.Client, email string) (string, error) {
-	key := "email:" + email
+// 获取邮箱验证码
+func GetEmailCode(rdb *redis.Client, email string, emailCodeType int8) (string, error) {
+	key := fmt.Sprintf("email:%d:%s", emailCodeType, email)
 	emailCode, err := rdb.Get(context.Background(), key).Result()
 	if err != nil {
 		logs.Error("获取邮箱验证码失败: ", err.Error())
