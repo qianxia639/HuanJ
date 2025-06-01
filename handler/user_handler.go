@@ -121,7 +121,7 @@ func (h *Handler) login(ctx *gin.Context) {
 	}
 
 	// 邮箱脱敏
-	user.Email = utils.MaskEmail(user.Email)
+	// user.Email = utils.MaskEmail(user.Email)
 
 	loginUserInfo := db.LoginUserInfo{
 		User:      user,
@@ -282,4 +282,32 @@ func (h *Handler) sendEmail(ctx *gin.Context) {
 	}
 
 	h.Success(ctx, "Send email success")
+}
+
+// 用户登出
+func (h *Handler) logout(ctx *gin.Context) {
+	authorization := ctx.Request.Header.Get(authorizationHeader)
+	if len(authorization) == 0 {
+		h.ParamsError(ctx, "缺少Token")
+		return
+	}
+
+	payload, err := h.Token.VerifyToken(authorization)
+	if err != nil {
+		logs.Errorf("解析token失败: %v\n", err)
+		h.ServerError(ctx)
+		return
+	}
+
+	// 计算剩余时间(秒)
+	ttl := time.Until(payload.ExpiredAt)
+
+	// 将令牌加入黑名单
+	err = h.RedisClient.Set(ctx, "jwt_blacklist:"+authorization, 1, ttl).Err()
+	if err != nil {
+		h.ServerError(ctx)
+		return
+	}
+
+	h.Success(ctx, "登出成功")
 }

@@ -2,7 +2,6 @@ package handler
 
 import (
 	db "HuanJ/db/sqlc"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,17 +34,12 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 		}
 
 		var loginUserInfo db.LoginUserInfo
-		err = h.RedisClient.Get(ctx, fmt.Sprintf("user:%s", payload.Username)).Scan(&loginUserInfo)
+		key := "user:" + payload.Username
+		err = h.RedisClient.Get(ctx, key).Scan(&loginUserInfo)
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-
-		// TODO: ua不一致标识异设备请求，可能需要做处理
-		// if ua != loginUserInfo.UserAgent {
-		// 	ctx.Abort()
-		// 	return
-		// }
 
 		h.CurrentUserInfo = loginUserInfo
 

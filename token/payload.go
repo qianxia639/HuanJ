@@ -2,7 +2,6 @@ package token
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,7 +18,6 @@ type Payload struct {
 	Username  string    `json:"username"`
 	IssuedAt  time.Time `json:"issued_at"`  // 创建时间
 	ExpiredAt time.Time `json:"expired_at"` // 过期时间
-	// paseto.JSONToken
 }
 
 func NewPayload(username string, duration time.Duration) *Payload {
@@ -36,7 +34,6 @@ func NewPayload(username string, duration time.Duration) *Payload {
 }
 
 func (payload *Payload) Valid() error {
-	fmt.Printf("expired at: %v", payload.ExpiredAt)
 	if time.Now().After(payload.ExpiredAt) {
 		return ErrExpiredToken
 	}
