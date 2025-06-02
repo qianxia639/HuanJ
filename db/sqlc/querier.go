@@ -25,6 +25,7 @@ type Querier interface {
 	GetGroup(ctx context.Context, groupName string) (Group, error)
 	GetGroupMemberList(ctx context.Context, groupID int32) ([]GroupMember, error)
 	GetUser(ctx context.Context, username string) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
 	UpdateFriendRequest(ctx context.Context, arg *UpdateFriendRequestParams) error
 	UpdatePwd(ctx context.Context, arg *UpdatePwdParams) error
