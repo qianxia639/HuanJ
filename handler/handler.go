@@ -78,6 +78,7 @@ func (handler *Handler) setupRouter() {
 
 	// Router
 	{
+		router.POST("/refresh")
 		router.PUT("/reset/pwd", handler.resetPwd)
 		router.POST("/email/code", handler.sendEmail)
 	}
@@ -85,6 +86,7 @@ func (handler *Handler) setupRouter() {
 	// User Router
 	{
 		router.POST("/login", handler.login)
+		authRouter.POST("/logout", handler.logout)
 		router.POST("/user", handler.createUser)
 
 		authRouter.GET("/user", handler.getUser)

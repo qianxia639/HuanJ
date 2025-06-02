@@ -89,11 +89,16 @@ type loginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type loginResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 func (h *Handler) login(ctx *gin.Context) {
 
 	var req loginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		h.ParamsError(ctx)
 		return
 	}
 
@@ -106,17 +111,14 @@ func (h *Handler) login(ctx *gin.Context) {
 	// 校验密码
 	err = utils.ComparePassword(req.Password, user.Password)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		h.Error(ctx, http.StatusUnauthorized, "密码错误")
 		return
 	}
 	// 生成Token
-	args := token.Token{
-		Username: user.Username,
-		Duration: h.Conf.Token.AccessTokenDuration,
-	}
-	tokenStr, err := h.Token.CreateToken(args)
+	resp, err := h.generateTokens(user.Username)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		logs.Errorf("Token生成失败 [%s]: %v", user.Username, err)
+		h.ServerError(ctx)
 		return
 	}
 
@@ -136,7 +138,55 @@ func (h *Handler) login(ctx *gin.Context) {
 	}
 
 	// 返回结果
-	h.Success(ctx, tokenStr)
+	h.Obj(ctx, resp)
+}
+
+func (h *Handler) generateTokens(username string) (loginResponse, error) {
+	// 生成access token
+	accessToken, err := h.Token.CreateToken(token.Token{
+		Username: username,
+		Duration: h.Conf.Token.AccessTokenDuration,
+	})
+	if err != nil {
+		return loginResponse{}, err
+	}
+
+	// 生成refresh token
+	refreshToken, err := h.Token.CreateToken(token.Token{
+		Username: username,
+		Duration: h.Conf.Token.RefreshTokenDuration,
+	})
+
+	return loginResponse{AccessToken: accessToken, RefreshToken: refreshToken}, err
+}
+
+type refreshTokenRequest struct {
+	Token string `json:"token"`
+}
+
+func (h *Handler) refreshToken(ctx *gin.Context) {
+	// 获取token
+	var req refreshTokenRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		h.ParamsError(ctx)
+		return
+	}
+	// 校验token
+	payload, err := h.Token.VerifyToken(req.Token)
+	if err != nil {
+		h.Error(ctx, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	// 生成新的access token
+	resp, err := h.generateTokens(payload.Username)
+	if err != nil {
+		logs.Errorf("Token生成失败 [%s]: %v", payload.Username, err)
+		h.ServerError(ctx)
+		return
+	}
+	// 返回新的access token
+	h.Obj(ctx, resp)
 }
 
 func (h *Handler) getUser(ctx *gin.Context) {
@@ -302,9 +352,14 @@ func (h *Handler) logout(ctx *gin.Context) {
 	// 计算剩余时间(秒)
 	ttl := time.Until(payload.ExpiredAt)
 
+	if ttl < time.Second {
+		ttl = time.Second // 确保最小生存时间
+	}
+
 	// 将令牌加入黑名单
-	err = h.RedisClient.Set(ctx, "jwt_blacklist:"+authorization, 1, ttl).Err()
+	err = h.RedisClient.Set(ctx, "token_blacklist:"+authorization, 1, ttl).Err()
 	if err != nil {
+		logs.Errorf("token黑名单设置失败 %v\n", err)
 		h.ServerError(ctx)
 		return
 	}

@@ -55,11 +55,15 @@ func (h *Handler) resetPwd(ctx *gin.Context) {
 		return
 	}
 
+	// 校验新旧密码是否相同
+
 	hashPwd, err := utils.HashPassword(req.ResetPwd)
 	if err != nil {
 		h.ServerError(ctx)
 		return
 	}
+
+	// 校验与上次修改密码的间隔时间
 
 	_ = h.Store.UpdatePwd(ctx, &db.UpdatePwdParams{
 		Email:    req.Email,
