@@ -8,7 +8,6 @@ import (
 
 type Result struct {
 	OK   bool        `json:"ok"`             // 请求是否成功
-	Code int         `json:"code,omitempty"` // 业务状态码(自定义)
 	Msg  string      `json:"msg,omitempty"`  // 错误信息
 	Data interface{} `json:"data,omitempty"` // 数据信息
 }

@@ -6,45 +6,37 @@ import (
 	"HuanJ/logs"
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-type createFriendReq struct {
+type sendFriendReq struct {
 	ToUserId    int32  `json:"to_user_id" binding:"required"`
 	RequestDesc string `json:"request_desc"`
 }
 
-// 添加好友申请
-func (handler *Handler) createFriendRequest(ctx *gin.Context) {
-	var req createFriendReq
+// 发送好友申请
+func (handler *Handler) sendFriendRequest(ctx *gin.Context) {
+	var req sendFriendReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		handler.Error(ctx, http.StatusBadRequest, err.Error())
+		handler.ParamsError(ctx)
 		return
 	}
 
-	// 校验是否是自己申请
+	// 不能添加自己
 	if req.ToUserId == handler.CurrentUserInfo.ID {
-		logs.Errorf("userId: %d, friendId: %d\n", handler.CurrentUserInfo.ID, req.ToUserId)
-		handler.Error(ctx, http.StatusUnauthorized, "不能添加自己")
+		handler.ParamsError(ctx, "不能添加自己")
 		return
 	}
 
-	// 检查请求者是否存在
+	// 检查用户是否存在
 	u, _ := handler.Store.GetUserById(ctx, req.ToUserId)
-	if u.ID == 0 {
-		handler.Error(ctx, http.StatusUnauthorized, "用户不存在")
+	if u.ID < 1 {
+		handler.ParamsError(ctx, "用户不存在")
 		return
 	}
 
-	// 检查是否存在待处理的请求
-	if fr, _ := handler.Store.GetFriendRequest(ctx, &db.GetFriendRequestParams{}); fr.ID > 0 {
-		ctx.JSON(http.StatusOK, nil)
-		return
-	}
-
-	// 检查是否已经是好友
+	// 检查是否已是好友
 	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{
 		FromUserID: handler.CurrentUserInfo.ID,
 		ToUserID:   req.ToUserId,
@@ -53,19 +45,27 @@ func (handler *Handler) createFriendRequest(ctx *gin.Context) {
 		return
 	}
 
+	// 检查是否已有申请
+	if fr, _ := handler.Store.GetFriendRequest(ctx, &db.GetFriendRequestParams{}); fr.ID > 0 {
+		handler.Success(ctx, "已申请, 无需重复申请")
+		return
+	}
+
+	// 添加申请记录
 	if err := handler.Store.CreateFriendRequest(ctx, &db.CreateFriendRequestParams{
 		FromUserID:  handler.CurrentUserInfo.ID,
 		ToUserID:    req.ToUserId,
 		RequestDesc: req.RequestDesc,
 	}); err != nil {
-		logs.Error(err)
-		handler.Error(ctx, http.StatusInternalServerError, "申请失败")
+		logs.Errorf("添加申请记录失败: %v", err)
+		handler.ServerError(ctx)
 		return
 	}
 
 	handler.Success(ctx, "申请成功")
 }
 
+// 获取待处理的好友申请
 func (handler *Handler) listFriendRequest(ctx *gin.Context) {
 	// userId := handler.CurrentUserInfo.ID
 
@@ -74,15 +74,17 @@ func (handler *Handler) listFriendRequest(ctx *gin.Context) {
 }
 
 type ProcessFriendRequest struct {
-	FromUserId int32  `json:"from_user_id" binding:"required"`
-	Action     string `json:"status" binding:"required,oneof=accept reject"`
-	Note       string `json:"note"`
+	FromUserId int32 `json:"from_user_id" binding:"required"`
+	// ToUserId   int32  `json:"to_user_id" binding:"required"`
+	Action string `json:"action" binding:"required,oneof=accept reject"`
+	Note   string `json:"note"`
 }
 
+// 处理好友申请
 func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 	var req ProcessFriendRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		handler.ParamsError(ctx)
 		return
 	}
 
@@ -96,10 +98,10 @@ func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 		return
 	}
 
-	if time.Now().After(fr.RequestedAt) {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "请求已过期"})
-		return
-	}
+	// if time.Now().After(fr.RequestedAt) {
+	// 	ctx.JSON(http.StatusUnauthorized, gin.H{"error": "请求已过期"})
+	// 	return
+	// }
 
 	switch req.Action {
 	case "accept":
@@ -109,13 +111,17 @@ func (handler *Handler) processFriendRequest(ctx *gin.Context) {
 			return
 		}
 	case "reject":
-		err = handler.rejectedUserProcess(ctx, req)
+		err = handler.Store.UpdateFriendRequest(ctx, &db.UpdateFriendRequestParams{
+			FromUserID: req.FromUserId,
+			ToUserID:   handler.CurrentUserInfo.ID,
+			Status:     config.Rejected,
+		})
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, err)
+			handler.ServerError(ctx)
 			return
 		}
 	default:
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		handler.ParamsError(ctx)
 		return
 	}
 
@@ -131,13 +137,4 @@ func (handler *Handler) acceptedUserProcess(ctx context.Context, req ProcessFrie
 		ToNote:     handler.CurrentUserInfo.Nickname,
 	}
 	return handler.Store.FriendRequestTx(ctx, args)
-}
-
-// 拒绝申请
-func (handler *Handler) rejectedUserProcess(ctx context.Context, req ProcessFriendRequest) error {
-	return handler.Store.UpdateFriendRequest(ctx, &db.UpdateFriendRequestParams{
-		FromUserID: req.FromUserId,
-		ToUserID:   handler.CurrentUserInfo.ID,
-		Status:     config.Rejected,
-	})
 }

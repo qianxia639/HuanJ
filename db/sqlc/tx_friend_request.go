@@ -23,6 +23,11 @@ func (store *SQLStore) FriendRequestTx(ctx context.Context, args FriendRequestTx
 			return err
 		}
 
+		// 确保fromUserId < toUserId来避免重复
+		if args.FromUserId > args.ToUserId {
+			args.FromUserId, args.ToUserId = args.ToUserId, args.FromUserId
+		}
+
 		// 创建双向好友关系(批量插入)
 		return q.createMutualFriendships(ctx, createMutualFriendshipParams{
 			FromUserId: args.FromUserId,

@@ -96,7 +96,7 @@ func (handler *Handler) setupRouter() {
 
 	// Friend Request Router
 	{
-		authRouter.POST("/friend/request", handler.createFriendRequest)
+		authRouter.POST("/friend/request", handler.sendFriendRequest)
 		authRouter.POST("/friend/request/process", handler.processFriendRequest)
 		authRouter.POST("/friend/request/list", handler.listFriendRequest)
 	}

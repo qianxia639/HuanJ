@@ -2,7 +2,7 @@
 SELECT * FROM friend_requests 
 WHERE 
 	((from_user_id = $1 AND to_user_id = $2) OR 
-	(from_user_id = $2 AND to_user_id = $1)) AND status = 1;
+	(from_user_id = $2 AND to_user_id = $1)) AND status = 'pending';
 
 -- name: CreateFriendRequest :exec
 INSERT INTO friend_requests (
@@ -17,4 +17,10 @@ SET
 	status  = $3,
 	updated_at = now()
 WHERE
-from_user_id = $1 AND to_user_id = $2 AND status = 1;
+from_user_id = $1 AND to_user_id = $2 AND status = 'pending';
+
+-- name: ListFriendRequestByPending :many
+SELECT * FROM friend_requests 
+WHERE 
+	to_user_id = $1 AND status = 'pending'
+ORDER BY created_at DESC;

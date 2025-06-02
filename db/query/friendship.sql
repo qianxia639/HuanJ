@@ -1,8 +1,8 @@
+-- 是否已是好友关系
 -- name: ExistsFriendship :one
 SELECT EXISTS(
-    SELECT 1 FROM friend_requests
-    WHERE (from_user_id = $1 AND to_user_id = $2 AND status = 2)
-    OR (from_user_id = $2 AND to_user_id = $1 AND status = 2)
+    SELECT 1 FROM friendships
+    WHERE (user_id = $1 AND friend_id = $2)
 );
 
 -- name: CreateFriendship :one
@@ -14,7 +14,10 @@ INSERT INTO friendships (
 RETURNING *;
 
 -- name: GetFriendList :many
-SELECT * FROM friendships WHERE user_id = $1;
+SELECT u.*
+FROM friendships f
+JOIN users u ON f.friend_id = u.id
+WHERE f.user_id = $1;
 
 -- name: DeleteFriend :exec
 DELETE FROM friendships 
