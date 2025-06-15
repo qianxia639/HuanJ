@@ -17,7 +17,7 @@ type CreateGroupTxResult struct {
 	GroupMember GroupMember `json:"group_member"`
 }
 
-func (store *SQLStore) CreateGroupTx(ctx context.Context, args CreateGroupTxParams) (CreateGroupTxResult, error) {
+func (store *SQLStore) CreateGroupTx(ctx context.Context, args *CreateGroupTxParams) (CreateGroupTxResult, error) {
 	var result CreateGroupTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {

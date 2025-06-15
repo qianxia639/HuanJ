@@ -2,8 +2,9 @@
 CREATE TABLE IF NOT EXISTS "friendships" (
     "user_id" INT NOT NULL,
     "friend_id" INT NOT NULL,
-    "note" VARCHAR(20) NOT NULL,
+    "remake" VARCHAR(20) NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, friend_id),
     CONSTRAINT "friendships_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT "friendships_friend_id_fk" FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE
@@ -13,9 +14,11 @@ COMMENT ON COLUMN "friendships"."user_id" IS '用户ID';
 
 COMMENT ON COLUMN "friendships"."friend_id" IS '好友ID';
 
-COMMENT ON COLUMN "friendships"."note" IS '好友备注';
+COMMENT ON COLUMN "friendships"."remake" IS '好友备注';
 
 COMMENT ON COLUMN "friendships"."created_at" IS '创建时间';
+
+COMMENT ON COLUMN "friendships"."updated_at" IS '更新时间';
 
 -- 创建枚举类型
 CREATE TYPE friendship_status AS ENUM (

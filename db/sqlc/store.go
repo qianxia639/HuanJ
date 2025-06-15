@@ -9,8 +9,8 @@ import (
 
 type Store interface {
 	Querier
-	FriendRequestTx(ctx context.Context, args FriendRequestTxParams) error
-	CreateGroupTx(ctx context.Context, args CreateGroupTxParams) (CreateGroupTxResult, error)
+	FriendRequestTx(ctx context.Context, args *FriendRequestTxParams) error
+	CreateGroupTx(ctx context.Context, args *CreateGroupTxParams) (CreateGroupTxResult, error)
 }
 
 type SQLStore struct {

@@ -10,7 +10,7 @@ type FriendRequestTxParams struct {
 	ToNote     string `json:"to_note"`
 }
 
-func (store *SQLStore) FriendRequestTx(ctx context.Context, args FriendRequestTxParams) error {
+func (store *SQLStore) FriendRequestTx(ctx context.Context, args *FriendRequestTxParams) error {
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		// 更新好友请求状态
