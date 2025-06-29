@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS "messages" (
     "sender_id" INT NOT NULL,
     "receiver_id" INT NOT NULL,
     "message_type" SMALLINT NOT NULL DEFAULT 1,
-    "content" VARCHAR(255) NOT NULL,
+    "content" JSONB NOT NULL,
     "content_type" SMALLINT NOT NULL DEFAULT 1,
     "message_status" SMALLINT NOT NULL DEFAULT 1,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
