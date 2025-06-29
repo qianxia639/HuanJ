@@ -3,6 +3,7 @@ package handler
 import (
 	"HuanJ/config"
 	db "HuanJ/db/sqlc"
+	"HuanJ/logger"
 	"HuanJ/logs"
 	"HuanJ/token"
 	"HuanJ/ws"
@@ -17,6 +18,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -57,9 +59,19 @@ func NewHandler(conf config.Config, store db.Store, rdb *redis.Client) *Handler 
 }
 
 func (handler *Handler) setupRouter() {
-	router := gin.Default()
+	router := gin.New()
 
-	router.Use(handler.CORS())
+	// 全局中间件
+	router.Use(
+		gin.Recovery(),
+		handler.CORS(),
+		LoggingFuncExecTime(),
+	)
+
+	router.GET("/ping", func(ctx *gin.Context) {
+		logger.Logger.Info("处理ping请求")
+		handler.Success(ctx, "pong")
+	})
 
 	connManager := ws.NewConnectionManager()
 	go connManager.Run()
@@ -126,6 +138,26 @@ func LogFuncExecTime() gin.HandlerFunc {
 		ctx.Next()
 		logs.Infof("HttpUrl: %s|%s Finish,Execute Time %5dms", req.Method, req.URL, time.Now().Sub(t).Milliseconds())
 	}
+}
+
+func LoggingFuncExecTime() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		start := time.Now()
+
+		ctx.Next()
+
+		duration := time.Since(start)
+		logger.Logger.Info("请求日志",
+			zap.String("method", ctx.Request.Method),
+			zap.String("path", ctx.Request.URL.Path),
+			zap.Int("status", ctx.Writer.Status()),
+			zap.Duration("duration", duration),
+			zap.String("client_ip", ctx.ClientIP()),
+			zap.String("user_agent", ctx.Request.UserAgent()),
+		)
+
+	}
+
 }
 
 func parseKeypair(privateKeyPath, publicKeyPath string) (ed25519.PrivateKey, ed25519.PublicKey, error) {

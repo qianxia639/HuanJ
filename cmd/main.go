@@ -4,6 +4,7 @@ import (
 	"HuanJ/config"
 	db "HuanJ/db/sqlc"
 	"HuanJ/handler"
+	"HuanJ/logger"
 	"context"
 	"net/http"
 	"os"
@@ -17,6 +18,7 @@ import (
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -24,6 +26,9 @@ import (
 )
 
 func main() {
+
+	logger.InitLogger()
+	defer logger.Logger.Sync()
 
 	conf, err := config.LoadConfig("config/.")
 	if err != nil {
@@ -61,9 +66,11 @@ func main() {
 func shutdown(ctx context.Context, srv *http.Server) {
 	// 启动HTTP服务器
 	go func() {
-		logs.Infof("Listening and serving HTTP on %s", strings.Split(srv.Addr, ":")[1])
+		// logs.Infof("Listening and serving HTTP on %s", strings.Split(srv.Addr, ":")[1])
+		logger.Logger.Info("Listening and serving HTTP on :" + strings.Split(srv.Addr, ":")[1])
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			logs.Fatal("Error starting server: ", err)
+			// logs.Fatal("Error starting server: ", err)
+			logger.Logger.Fatal("服务启动失败", zap.Error(err))
 		}
 	}()
 
@@ -72,13 +79,15 @@ func shutdown(ctx context.Context, srv *http.Server) {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	/// 等待退出信号
 	<-quit
-	logs.Info("Received exit signal, shutting down...")
+	// logs.Info("Received exit signal, shutting down...")
+	logger.Logger.Info("收到退出信号, 关闭服务中...")
 
 	if err := srv.Shutdown(ctx); err != nil {
 		logs.Fatal("Server shutdown: ", err)
 	}
 
-	logs.Info("Server closed...")
+	// logs.Info("Server closed...")
+	logger.Logger.Info("服务已关闭...")
 }
 
 // sql file migrate
