@@ -14,19 +14,28 @@ type Querier interface {
 	CreateGroup(ctx context.Context, arg *CreateGroupParams) (Group, error)
 	CreateGroupMember(ctx context.Context, arg *CreateGroupMemberParams) (GroupMember, error)
 	CreateUser(ctx context.Context, arg *CreateUserParams) (User, error)
+	// DELETE FROM friendships
+	// WHERE (user_id = $1 AND friend_id = $2)
+	//     OR (user_id = $2 AND friend_id = $1);
 	DeleteFriend(ctx context.Context, arg *DeleteFriendParams) error
-	ExistsEmail(ctx context.Context, email string) (int64, error)
+	ExistsEmail(ctx context.Context, email string) (bool, error)
+	// 是否已是好友关系
 	ExistsFriendship(ctx context.Context, arg *ExistsFriendshipParams) (bool, error)
 	ExistsGroupMember(ctx context.Context, arg *ExistsGroupMemberParams) (bool, error)
-	ExistsNickname(ctx context.Context, nickname string) (int64, error)
-	ExistsUsername(ctx context.Context, username string) (int64, error)
-	GetFriendList(ctx context.Context, userID int32) ([]Friendship, error)
-	GetFriendRequest(ctx context.Context, arg *GetFriendRequestParams) (FriendRequest, error)
+	ExistsNickname(ctx context.Context, nickname string) (bool, error)
+	ExistsUsername(ctx context.Context, username string) (bool, error)
+	GetFriendList(ctx context.Context, userID int32) ([]User, error)
+	// 检查申请是否存在
+	// SELECT * FROM friend_requests
+	// WHERE
+	// 	from_user_id = $1 AND to_user_id = $2 AND status = 1;
+	GetFriendRequest(ctx context.Context, arg *GetFriendRequestParams) (bool, error)
 	GetGroup(ctx context.Context, groupName string) (Group, error)
 	GetGroupMemberList(ctx context.Context, groupID int32) ([]GroupMember, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
+	ListFriendRequestByPending(ctx context.Context, toUserID int32) ([]FriendRequest, error)
 	UpdateFriendRequest(ctx context.Context, arg *UpdateFriendRequestParams) error
 	UpdatePwd(ctx context.Context, arg *UpdatePwdParams) error
 	UpdateUser(ctx context.Context, arg *UpdateUserParams) (User, error)

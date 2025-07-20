@@ -10,53 +10,57 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// 好友申请表
 type FriendRequest struct {
 	// 请求ID
 	ID int32 `json:"id"`
-	// 请求者ID
+	// 申请者ID
 	FromUserID int32 `json:"from_user_id"`
 	// 接收者ID
 	ToUserID int32 `json:"to_user_id"`
 	// 请求信息
 	RequestDesc string `json:"request_desc"`
-	// 请求状态, 1: 待处理, 2: 已同意, 3: 已拒绝, 4: 已忽略
+	// 请求状态, 1: 待处理, 2: 已同意, 3: 已拒绝
 	Status int8 `json:"status"`
 	// 请求时间
-	RequestedAt time.Time `json:"requested_at"`
+	CreatedAt time.Time `json:"created_at"`
 	// 变更时间
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// 好友关系表
 type Friendship struct {
 	// 用户ID
 	UserID int32 `json:"user_id"`
 	// 好友ID
 	FriendID int32 `json:"friend_id"`
 	// 好友备注
-	Note string `json:"note"`
+	Remark string `json:"remark"`
 	// 创建时间
 	CreatedAt time.Time `json:"created_at"`
+	// 更新时间
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// 群组表
 type Group struct {
 	// 群组ID
 	ID int32 `json:"id"`
 	// 群组名称
 	GroupName string `json:"group_name"`
-	// 创建者ID
-	CreatorID int32 `json:"creator_id"`
+	// 群主ID
+	OwnerID int32 `json:"owner_id"`
 	// 群组头像URL
 	AvatarUrl string `json:"avatar_url"`
 	// 群组描述
 	Description string `json:"description"`
-	// 群组最大成员数, 默认500
-	MaxMember int32 `json:"max_member"`
 	// 群组创建时间
 	CreatedAt time.Time `json:"created_at"`
 	// 群组信息更新时间
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// 群组成员表
 type GroupMember struct {
 	// 群组ID
 	GroupID int32 `json:"group_id"`
@@ -64,7 +68,7 @@ type GroupMember struct {
 	UserID int32 `json:"user_id"`
 	// 成员角色, 1: 群主, 2: 管理员, 3: 普通成员
 	Role int8 `json:"role"`
-	// 禁言截止时间
+	// 禁言截止时间(NULL表示未被禁言)
 	MuteUntil pgtype.Timestamptz `json:"mute_until"`
 	// 群内昵称
 	Nickname string `json:"nickname"`
@@ -72,19 +76,22 @@ type GroupMember struct {
 	JoinedAt time.Time `json:"joined_at"`
 }
 
+// 群组申请表
 type GroupRequest struct {
 	// 请求ID
 	ID int32 `json:"id"`
-	// 请求者ID
+	// 申请者ID
 	UserID int32 `json:"user_id"`
-	// 接收者ID
+	// 群组ID
 	GroupID int32 `json:"group_id"`
 	// 请求信息
 	RequestDesc string `json:"request_desc"`
-	// 请求状态, 1: 待处理, 2: 已同意, 3: 已拒绝, 4: 已忽略
+	// 请求状态, 1: 待处理, 2: 已同意, 3: 已拒绝
 	Status int8 `json:"status"`
-	// 请求时间
-	RequestedAt time.Time `json:"requested_at"`
+	// 处理者ID
+	ProcessorID int32 `json:"processor_id"`
+	// 创建时间
+	CreatedAt time.Time `json:"created_at"`
 	// 变更时间
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -99,7 +106,7 @@ type Message struct {
 	// 消息类型, 1: 私聊, 2: 群聊, 3: 系统消息
 	MessageType int8 `json:"message_type"`
 	// 消息内容
-	Content string `json:"content"`
+	Content []byte `json:"content"`
 	// 消息内容类型, 1: 文字, 2: 文件, 3: 图片, 4: 语音, 5: 视频
 	ContentType int8 `json:"content_type"`
 	// 消息状态, 1: 已发送, 2: 已读, 3: 删除, 4: 撤回
@@ -110,6 +117,7 @@ type Message struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// 用户表
 type User struct {
 	// 用户ID
 	ID int32 `json:"id"`
@@ -123,18 +131,16 @@ type User struct {
 	Email string `json:"email"`
 	// 用户性别, 1:男, 2:女, 3: 未知
 	Gender int8 `json:"gender"`
+	// 出生日期
+	Brithday pgtype.Date `json:"brithday"`
 	// 头像URL
 	AvatarUrl string `json:"avatar_url"`
+	// 个性签名
+	Signature string `json:"signature"`
 	// 上次密码更新时间
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	// 创建时间
 	CreatedAt time.Time `json:"created_at"`
 	// 更新时间
 	UpdatedAt time.Time `json:"updated_at"`
-	// 用户手机号
-	Phone pgtype.Text `json:"phone"`
-	// 用户生日
-	Birthday pgtype.Date `json:"birthday"`
-	// 用户简介或个性签名
-	Bio pgtype.Text `json:"bio"`
 }

@@ -7,7 +7,7 @@ SELECT EXISTS(
 
 -- name: CreateFriendship :one
 INSERT INTO friendships (
-    user_id, friend_id, note
+    user_id, friend_id, remark
 ) VALUES (
     $1, $2, $3
 )

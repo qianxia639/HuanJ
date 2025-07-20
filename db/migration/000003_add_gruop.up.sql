@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS "group_requests" (
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT '0001-01-01 00:00:00Z',
     CONSTRAINT "group_requests_user_id_fk" FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT "group_requests_group_id_fk" FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE,
-    CONSTRAINT "group_requests_processor_id_fk" FOREIGN KEY (processor_id) REFERENCES user (id) ON DELETE CASCADE
+    CONSTRAINT "group_requests_processor_id_fk" FOREIGN KEY (processor_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 COMMENT ON TABLE "group_requests" IS '群组申请表';

@@ -11,28 +11,27 @@ import (
 
 const createGroup = `-- name: CreateGroup :one
 INSERT INTO groups (
-	group_name, creator_id, description
+	group_name, owner_id, description
 ) VALUES (
 	$1, $2, $3
-) RETURNING id, group_name, creator_id, avatar_url, description, max_member, created_at, updated_at
+) RETURNING id, group_name, owner_id, avatar_url, description, created_at, updated_at
 `
 
 type CreateGroupParams struct {
 	GroupName   string `json:"group_name"`
-	CreatorID   int32  `json:"creator_id"`
+	OwnerID     int32  `json:"owner_id"`
 	Description string `json:"description"`
 }
 
 func (q *Queries) CreateGroup(ctx context.Context, arg *CreateGroupParams) (Group, error) {
-	row := q.db.QueryRow(ctx, createGroup, arg.GroupName, arg.CreatorID, arg.Description)
+	row := q.db.QueryRow(ctx, createGroup, arg.GroupName, arg.OwnerID, arg.Description)
 	var i Group
 	err := row.Scan(
 		&i.ID,
 		&i.GroupName,
-		&i.CreatorID,
+		&i.OwnerID,
 		&i.AvatarUrl,
 		&i.Description,
-		&i.MaxMember,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -40,7 +39,7 @@ func (q *Queries) CreateGroup(ctx context.Context, arg *CreateGroupParams) (Grou
 }
 
 const getGroup = `-- name: GetGroup :one
-SELECT id, group_name, creator_id, avatar_url, description, max_member, created_at, updated_at FROM groups WHERE group_name = $1 LIMIT 1
+SELECT id, group_name, owner_id, avatar_url, description, created_at, updated_at FROM groups WHERE group_name = $1 LIMIT 1
 `
 
 func (q *Queries) GetGroup(ctx context.Context, groupName string) (Group, error) {
@@ -49,10 +48,9 @@ func (q *Queries) GetGroup(ctx context.Context, groupName string) (Group, error)
 	err := row.Scan(
 		&i.ID,
 		&i.GroupName,
-		&i.CreatorID,
+		&i.OwnerID,
 		&i.AvatarUrl,
 		&i.Description,
-		&i.MaxMember,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

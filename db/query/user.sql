@@ -16,7 +16,7 @@ SELECT EXISTS (
 SELECT EXISTS (
 	SELECT 1 FROM users
 	WHERE email = $1
-)
+);
 
 -- name: ExistsNickname :one
 SELECT EXISTS (

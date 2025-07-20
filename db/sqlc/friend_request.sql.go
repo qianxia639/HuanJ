@@ -29,10 +29,11 @@ func (q *Queries) CreateFriendRequest(ctx context.Context, arg *CreateFriendRequ
 }
 
 const getFriendRequest = `-- name: GetFriendRequest :one
-SELECT id, from_user_id, to_user_id, request_desc, status, requested_at, updated_at FROM friend_requests 
-WHERE 
-	((from_user_id = $1 AND to_user_id = $2) OR 
-	(from_user_id = $2 AND to_user_id = $1)) AND status = 1
+SELECT EXISTS (
+	SELECT 1
+	FROM friend_requests
+	WHERE from_user_id = $1 AND to_user_id = $2 AND status = 1
+)
 `
 
 type GetFriendRequestParams struct {
@@ -40,19 +41,51 @@ type GetFriendRequestParams struct {
 	ToUserID   int32 `json:"to_user_id"`
 }
 
-func (q *Queries) GetFriendRequest(ctx context.Context, arg *GetFriendRequestParams) (FriendRequest, error) {
+// 检查申请是否存在
+// SELECT * FROM friend_requests
+// WHERE
+//
+//	from_user_id = $1 AND to_user_id = $2 AND status = 1;
+func (q *Queries) GetFriendRequest(ctx context.Context, arg *GetFriendRequestParams) (bool, error) {
 	row := q.db.QueryRow(ctx, getFriendRequest, arg.FromUserID, arg.ToUserID)
-	var i FriendRequest
-	err := row.Scan(
-		&i.ID,
-		&i.FromUserID,
-		&i.ToUserID,
-		&i.RequestDesc,
-		&i.Status,
-		&i.RequestedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const listFriendRequestByPending = `-- name: ListFriendRequestByPending :many
+SELECT id, from_user_id, to_user_id, request_desc, status, created_at, updated_at FROM friend_requests 
+WHERE 
+	to_user_id = $1 AND status = 1
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListFriendRequestByPending(ctx context.Context, toUserID int32) ([]FriendRequest, error) {
+	rows, err := q.db.Query(ctx, listFriendRequestByPending, toUserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FriendRequest{}
+	for rows.Next() {
+		var i FriendRequest
+		if err := rows.Scan(
+			&i.ID,
+			&i.FromUserID,
+			&i.ToUserID,
+			&i.RequestDesc,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateFriendRequest = `-- name: UpdateFriendRequest :exec
@@ -61,7 +94,9 @@ SET
 	status  = $3,
 	updated_at = now()
 WHERE
-from_user_id = $1 AND to_user_id = $2 AND status = 1
+	(from_user_id = $1 AND to_user_id = $2 AND status = 1)
+OR 
+	(to_user_id = $1 AND from_user_id = $2 AND status = 1)
 `
 
 type UpdateFriendRequestParams struct {

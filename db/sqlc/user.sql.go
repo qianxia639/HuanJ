@@ -17,7 +17,7 @@ INSERT INTO users (
 ) VALUES (
 	$1, $2, $3, $4, $5
 )
-RETURNING id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio
+RETURNING id, username, nickname, password, email, gender, brithday, avatar_url, signature, password_changed_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -44,52 +44,60 @@ func (q *Queries) CreateUser(ctx context.Context, arg *CreateUserParams) (User, 
 		&i.Password,
 		&i.Email,
 		&i.Gender,
+		&i.Brithday,
 		&i.AvatarUrl,
+		&i.Signature,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Phone,
-		&i.Birthday,
-		&i.Bio,
 	)
 	return i, err
 }
 
 const existsEmail = `-- name: ExistsEmail :one
-SELECT COUNT(*) FROM users WHERE email = $1
+SELECT EXISTS (
+	SELECT 1 FROM users
+	WHERE email = $1
+)
 `
 
-func (q *Queries) ExistsEmail(ctx context.Context, email string) (int64, error) {
+func (q *Queries) ExistsEmail(ctx context.Context, email string) (bool, error) {
 	row := q.db.QueryRow(ctx, existsEmail, email)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const existsNickname = `-- name: ExistsNickname :one
-SELECT COUNT(*) FROM users WHERE nickname = $1
+SELECT EXISTS (
+	SELECT 1 FROM users
+	WHERE nickname = $1
+)
 `
 
-func (q *Queries) ExistsNickname(ctx context.Context, nickname string) (int64, error) {
+func (q *Queries) ExistsNickname(ctx context.Context, nickname string) (bool, error) {
 	row := q.db.QueryRow(ctx, existsNickname, nickname)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const existsUsername = `-- name: ExistsUsername :one
-SELECT COUNT(*) FROM users WHERE username = $1
+SELECT EXISTS (
+	SELECT 1 FROM users 
+	WHERE username = $1
+)
 `
 
-func (q *Queries) ExistsUsername(ctx context.Context, username string) (int64, error) {
+func (q *Queries) ExistsUsername(ctx context.Context, username string) (bool, error) {
 	row := q.db.QueryRow(ctx, existsUsername, username)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio FROM users WHERE username = $1 LIMIT 1
+SELECT id, username, nickname, password, email, gender, brithday, avatar_url, signature, password_changed_at, created_at, updated_at FROM users WHERE username = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
@@ -102,19 +110,18 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 		&i.Password,
 		&i.Email,
 		&i.Gender,
+		&i.Brithday,
 		&i.AvatarUrl,
+		&i.Signature,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Phone,
-		&i.Birthday,
-		&i.Bio,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio FROM users WHERE email = $1 LIMIT 1
+SELECT id, username, nickname, password, email, gender, brithday, avatar_url, signature, password_changed_at, created_at, updated_at FROM users WHERE email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -127,19 +134,18 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Password,
 		&i.Email,
 		&i.Gender,
+		&i.Brithday,
 		&i.AvatarUrl,
+		&i.Signature,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Phone,
-		&i.Birthday,
-		&i.Bio,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio FROM users WHERE id = $1 LIMIT 1
+SELECT id, username, nickname, password, email, gender, brithday, avatar_url, signature, password_changed_at, created_at, updated_at FROM users WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
@@ -152,13 +158,12 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 		&i.Password,
 		&i.Email,
 		&i.Gender,
+		&i.Brithday,
 		&i.AvatarUrl,
+		&i.Signature,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Phone,
-		&i.Birthday,
-		&i.Bio,
 	)
 	return i, err
 }
@@ -190,7 +195,7 @@ SET
 	nickname = COALESCE($2, nickname), 
 	updated_at = now()
 WHERE id = $3
-RETURNING id, username, nickname, password, email, gender, avatar_url, password_changed_at, created_at, updated_at, phone, birthday, bio
+RETURNING id, username, nickname, password, email, gender, brithday, avatar_url, signature, password_changed_at, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -209,13 +214,12 @@ func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) (User, 
 		&i.Password,
 		&i.Email,
 		&i.Gender,
+		&i.Brithday,
 		&i.AvatarUrl,
+		&i.Signature,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Phone,
-		&i.Birthday,
-		&i.Bio,
 	)
 	return i, err
 }
