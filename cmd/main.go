@@ -27,8 +27,10 @@ import (
 
 func main() {
 
-	logger.InitLogger()
-	defer logger.Logger.Sync()
+	logger := logger.InitLogger()
+	// 设置为全局日志器
+	zap.ReplaceGlobals(logger)
+	defer logger.Sync()
 
 	conf, err := config.LoadConfig("config/.")
 	if err != nil {
@@ -67,10 +69,10 @@ func shutdown(ctx context.Context, srv *http.Server) {
 	// 启动HTTP服务器
 	go func() {
 		// logs.Infof("Listening and serving HTTP on %s", strings.Split(srv.Addr, ":")[1])
-		logger.Logger.Info("Listening and serving HTTP on :" + strings.Split(srv.Addr, ":")[1])
+		zap.L().Info("Listening and serving HTTP on :" + strings.Split(srv.Addr, ":")[1])
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			// logs.Fatal("Error starting server: ", err)
-			logger.Logger.Fatal("服务启动失败", zap.Error(err))
+			zap.L().Fatal("服务启动失败", zap.Error(err))
 		}
 	}()
 
@@ -80,14 +82,14 @@ func shutdown(ctx context.Context, srv *http.Server) {
 	/// 等待退出信号
 	<-quit
 	// logs.Info("Received exit signal, shutting down...")
-	logger.Logger.Info("收到退出信号, 关闭服务中...")
+	zap.L().Info("收到退出信号, 关闭服务中...")
 
 	if err := srv.Shutdown(ctx); err != nil {
 		logs.Fatal("Server shutdown: ", err)
 	}
 
 	// logs.Info("Server closed...")
-	logger.Logger.Info("服务已关闭...")
+	zap.L().Info("服务已关闭...")
 }
 
 // sql file migrate

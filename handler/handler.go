@@ -3,7 +3,6 @@ package handler
 import (
 	"HuanJ/config"
 	db "HuanJ/db/sqlc"
-	"HuanJ/logger"
 	"HuanJ/logs"
 	"HuanJ/token"
 	"HuanJ/ws"
@@ -69,7 +68,7 @@ func (handler *Handler) setupRouter() {
 	)
 
 	router.GET("/ping", func(ctx *gin.Context) {
-		logger.Logger.Info("处理ping请求")
+		zap.L().Info("处理ping请求")
 		handler.Success(ctx, "pong")
 	})
 
@@ -147,11 +146,11 @@ func LoggingFuncExecTime() gin.HandlerFunc {
 		ctx.Next()
 
 		duration := time.Since(start)
-		logger.Logger.Info("请求日志",
+		zap.L().Info("请求日志",
 			zap.String("method", ctx.Request.Method),
 			zap.String("path", ctx.Request.URL.Path),
 			zap.Int("status", ctx.Writer.Status()),
-			zap.Duration("duration", duration),
+			zap.Duration("duration", duration*time.Millisecond),
 			zap.String("client_ip", ctx.ClientIP()),
 			zap.String("user_agent", ctx.Request.UserAgent()),
 		)

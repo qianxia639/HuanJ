@@ -20,6 +20,9 @@ JOIN users u ON f.friend_id = u.id
 WHERE f.user_id = $1;
 
 -- name: DeleteFriend :exec
+-- DELETE FROM friendships 
+-- WHERE (user_id = $1 AND friend_id = $2) 
+--     OR (user_id = $2 AND friend_id = $1);
 DELETE FROM friendships 
-WHERE (user_id = $1 AND friend_id = $2) 
-    OR (user_id = $2 AND friend_id = $1);
+WHERE (user_id, friend_id) 
+IN (($1, $2), ($2, $1));

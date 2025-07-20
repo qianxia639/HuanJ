@@ -7,13 +7,22 @@ INSERT INTO users (
 RETURNING *;
 
 -- name: ExistsUsername :one
-SELECT COUNT(*) FROM users WHERE username = $1;
+SELECT EXISTS (
+	SELECT 1 FROM users 
+	WHERE username = $1
+);
 
 -- name: ExistsEmail :one
-SELECT COUNT(*) FROM users WHERE email = $1;
+SELECT EXISTS (
+	SELECT 1 FROM users
+	WHERE email = $1
+)
 
 -- name: ExistsNickname :one
-SELECT COUNT(*) FROM users WHERE nickname = $1;;
+SELECT EXISTS (
+	SELECT 1 FROM users
+	WHERE nickname = $1
+);
 
 -- name: GetUser :one
 SELECT * FROM users WHERE username = $1 LIMIT 1;

@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS "friendships" (
     "user_id" INT NOT NULL,
     "friend_id" INT NOT NULL,
-    "remake" VARCHAR(20) NOT NULL,
+    "remark" VARCHAR(20) NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, friend_id),
@@ -14,7 +14,7 @@ COMMENT ON COLUMN "friendships"."user_id" IS '用户ID';
 
 COMMENT ON COLUMN "friendships"."friend_id" IS '好友ID';
 
-COMMENT ON COLUMN "friendships"."remake" IS '好友备注';
+COMMENT ON COLUMN "friendships"."remark" IS '好友备注';
 
 COMMENT ON COLUMN "friendships"."created_at" IS '创建时间';
 
@@ -35,10 +35,21 @@ CREATE TABLE IF NOT EXISTS "friend_requests" (
     "request_desc" VARCHAR(100) NOT NULL DEFAULT '',
     "status" friendship_status NOT NULL DEFAULT 'pending',
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT '0001-01-01 00:00:00Z',
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "friend_requests_from_user_id_fk" FOREIGN KEY (from_user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT "friend_requests_to_user_id_fk" FOREIGN KEY (to_user_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT "friend_requests_to_user_id_fk" FOREIGN KEY (to_user_id) REFERENCES users (id) ON DELETE CASCADE,
+
+    -- 唯一约束, 防止重复请求
+    UNIQUE(from_user_id, to_user_id)
+    WHERE status = 'pending'    -- 仅对 pending 状态生效
 );
+
+-- 创建唯一索引，防止重复请求，仅对pending状态生效
+CREATE UNIQUE INDEX idx_unique_pending_request 
+    ON friend_requests(from_user_id, to_user_id) 
+    WHERE status = 'pending';
+
+COMMENT ON TABLE 'friend_requests' IS '好友请求表';
 
 COMMENT ON COLUMN "friend_requests"."id" IS '请求ID';
 
