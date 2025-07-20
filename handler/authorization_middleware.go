@@ -2,9 +2,12 @@ package handler
 
 import (
 	db "HuanJ/db/sqlc"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 )
 
 const (
@@ -37,11 +40,17 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 		key := "user:" + payload.Username
 		err = h.RedisClient.Get(ctx, key).Scan(&loginUserInfo)
 		if err != nil {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
+			if errors.Is(err, redis.Nil) {
+				ctx.AbortWithStatus(http.StatusUnauthorized)
+				return
+			}
+			zap.L().Error("Redis error", zap.Error(err))
+			ctx.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 
 		h.CurrentUserInfo = loginUserInfo
+		ctx.Set("current_user_info", loginUserInfo)
 
 		ctx.Next()
 	}

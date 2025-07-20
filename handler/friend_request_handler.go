@@ -47,7 +47,7 @@ func (handler *Handler) sendFriendRequest(ctx *gin.Context) {
 		return
 	}
 
-	// 检查是否已有申请(当前用户发送给目标用户的)
+	// 检查申请是否存在(当前用户发送给目标用户的)
 	outgoingReq, _ := handler.Store.GetFriendRequest(ctx, &db.GetFriendRequestParams{
 		FromUserID: currentUserId,
 		ToUserID:   req.ToUserId,

@@ -1,16 +1,20 @@
 -- 用户表
 CREATE TABLE IF NOT EXISTS "users" (
     "id" SERIAL PRIMARY KEY,
-    "username" VARCHAR(20) UNIQUE NOT NULL,
-    "nickname" VARCHAR(60) UNIQUE NOT NULL,
-    "password" VARCHAR NOT NULL,
+    "username" VARCHAR(32) UNIQUE NOT NULL,
+    "nickname" VARCHAR(64) UNIQUE NOT NULL,
+    "password" CHAR(60) NOT NULL,
     "email" VARCHAR(64) UNIQUE NOT NULL,
     "gender" SMALLINT NOT NULL DEFAULT 3,
+    "brithday" DATE,
     "avatar_url" VARCHAR(255) NOT NULL DEFAULT '',
+    "signature" TEXT NOT null DEFAULT '',
     "password_changed_at" TIMESTAMPTZ NOT NULL DEFAULT '0001-01-01 00:00:00Z',
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+COMMENT ON TABLE "users" IS '用户表';
 
 COMMENT ON COLUMN "users"."id" IS '用户ID';
 
@@ -24,7 +28,11 @@ COMMENT ON COLUMN "users"."email" IS '用户邮箱';
 
 COMMENT ON COLUMN "users"."gender" IS '用户性别, 1:男, 2:女, 3: 未知';
 
+COMMENT ON COLUMN "users"."brithday" IS '出生日期';
+
 COMMENT ON COLUMN "users"."avatar_url" IS '头像URL';
+
+COMMENT ON COLUMN "users"."signature" IS '个性签名';
 
 COMMENT ON COLUMN "users"."password_changed_at" IS '上次密码更新时间';
 
