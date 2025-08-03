@@ -64,16 +64,10 @@ func (handler *Handler) setupRouter() {
 	router.Use(
 		gin.Recovery(),
 		handler.CORS(),
-		LoggingFuncExecTime(),
+		LogingFuncExecTime(),
 	)
 
-	router.GET("/ping", func(ctx *gin.Context) {
-		zap.L().Info("处理ping请求")
-		handler.Success(ctx, "pong")
-	})
-
-	connManager := ws.NewConnectionManager()
-	go connManager.Run()
+	go ws.Manager.Run()
 
 	if handler.Conf.Secret.Enable {
 		router.Use(handler.secret())
@@ -81,7 +75,7 @@ func (handler *Handler) setupRouter() {
 
 	router.GET("/ws", handler.wsHandler)
 	router.GET("/wss", func(ctx *gin.Context) {
-		handler.wssHandler(connManager, ctx.Writer, ctx.Request)
+		// handler.wssHandler(connManager, ctx.Writer, ctx.Request)
 	})
 
 	authRouter := router.Group("")
@@ -139,7 +133,7 @@ func LogFuncExecTime() gin.HandlerFunc {
 	}
 }
 
-func LoggingFuncExecTime() gin.HandlerFunc {
+func LogingFuncExecTime() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		start := time.Now()
 

@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
+	"go.uber.org/zap"
 )
 
 type createUserRequest struct {
@@ -47,13 +48,13 @@ func (h *Handler) createUser(ctx *gin.Context) {
 	}
 
 	// 判断用户名是否存在
-	if i, _ := h.Store.ExistsUsername(ctx, req.Username); i > 0 {
+	if exists, _ := h.Store.ExistsUsername(ctx, req.Username); exists {
 		h.ParamsError(ctx, "用户名已存在")
 		return
 	}
 
 	// 判断邮箱是否存在
-	if i, _ := h.Store.ExistsEmail(ctx, req.Email); i > 0 {
+	if exists, _ := h.Store.ExistsEmail(ctx, req.Email); exists {
 		h.ParamsError(ctx, "邮箱已存在")
 		return
 	}
@@ -181,7 +182,7 @@ func (h *Handler) refreshToken(ctx *gin.Context) {
 	// 生成新的access token
 	resp, err := h.generateTokens(payload.Username)
 	if err != nil {
-		logs.Errorf("Token生成失败 [%s]: %v", payload.Username, err)
+		zap.L().Error("Token生成失败", zap.String("username", payload.Username), zap.Error(err))
 		h.ServerError(ctx)
 		return
 	}
@@ -191,9 +192,13 @@ func (h *Handler) refreshToken(ctx *gin.Context) {
 
 func (h *Handler) getUser(ctx *gin.Context) {
 
-	h.Obj(ctx, h.CurrentUserInfo)
-
-	// ctx.JSON(http.StatusOK, gin.H{"message": "successfully", "data": h.CurrentUserInfo})
+	data, ok := ctx.Get("current_user_info")
+	if !ok {
+		zap.L().Error("key不存在", zap.String("key", "current_user_info"), zap.Bool("ok", ok))
+		h.ServerError(ctx)
+		return
+	}
+	h.Obj(ctx, data)
 }
 
 type updateUserRequest struct {
@@ -217,7 +222,7 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 
 	if req.Nickname != nil && *req.Nickname != h.CurrentUserInfo.Nickname {
 		// 判断用户昵称是否重复
-		if i, _ := h.Store.ExistsNickname(ctx, *req.Nickname); i > 0 {
+		if exists, _ := h.Store.ExistsNickname(ctx, *req.Nickname); exists {
 			ctx.JSON(http.StatusBadRequest, gin.H{"message": "用户昵称存在"})
 			return
 		}
@@ -235,11 +240,6 @@ func (h *Handler) updateUser(ctx *gin.Context) {
 		},
 	}
 	h.CurrentUserInfo.User, err = h.Store.UpdateUser(ctx, args)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Update user failed", "error": err.Error()})
-		return
-	}
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Update user failed", "error": err.Error()})
 		return

@@ -136,7 +136,7 @@ func (h *Handler) deleteFriend(ctx *gin.Context) {
 	// 删除
 	err = h.Store.DeleteFriend(ctx, &db.DeleteFriendParams{
 		UserID:   userId,
-		FriendID: int32(friendId),
+		UserID_2: int32(friendId),
 	})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "删除失败", "error": err.Error()})

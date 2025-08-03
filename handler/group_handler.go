@@ -49,7 +49,7 @@ func (handler *Handler) createGroup(ctx *gin.Context) {
 	result, err := handler.Store.CreateGroupTx(ctx, &db.CreateGroupTxParams{
 		CreateGroupParams: db.CreateGroupParams{
 			GroupName:   req.GroupName,
-			CreatorID:   handler.CurrentUserInfo.ID,
+			OwnerID:     handler.CurrentUserInfo.ID,
 			Description: req.Description,
 		},
 		UserId: handler.CurrentUserInfo.ID,

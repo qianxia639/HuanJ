@@ -49,7 +49,7 @@ func (h *Handler) authorizationMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		h.CurrentUserInfo = loginUserInfo
+		// h.CurrentUserInfo = loginUserInfo
 		ctx.Set("current_user_info", loginUserInfo)
 
 		ctx.Next()

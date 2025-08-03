@@ -1,10 +1,10 @@
 package ws
 
 import (
-	"HuanJ/logs"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"go.uber.org/zap"
 )
 
 const (
@@ -49,7 +49,7 @@ func (c *WsClient) ReadPump() {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				logs.Errorf("error: %v", err)
+				zap.L().Error("websocket连接已关闭", zap.Error(err))
 			}
 			break
 		}
@@ -77,7 +77,7 @@ func (c *WsClient) WritePump() {
 			}
 			w, err := c.Conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				logs.Errorf("")
+				zap.L().Error("获取下一个消息失败", zap.Error(err))
 				return
 			}
 			w.Write(message)
@@ -92,7 +92,7 @@ func (c *WsClient) WritePump() {
 		case <-ticker.C:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				logs.Errorf("")
+				zap.L().Error("写入ping消息失败", zap.Error(err))
 				return
 			}
 		}
@@ -104,17 +104,17 @@ func HandlerMessage(client *WsClient, message []byte) {
 	// 根据消息类型处理私聊/群聊
 	// 获取目标用户的客户端连接并发送消息
 	// 群聊则查询群成员并遍历发送
-	client.ConnManager.Broadcast <- message
+	// client.ConnManager.Broadcast <- message
 }
 
 // 私聊
-func SendPrivateMessage(sender *WsClient, toId int32, message []byte) {
-	clients := sender.ConnManager.GetUserClients(toId)
-	for _, client := range clients {
-		client.Send <- message
-	}
-	// 持久化消息
-}
+// func SendPrivateMessage(sender *WsClient, toId int32, message []byte) {
+// 	clients := sender.ConnManager.GetUserClients(toId)
+// 	for _, client := range clients {
+// 		client.Send <- message
+// 	}
+// 	// 持久化消息
+// }
 
 // 群聊
 func SendGroupMessage(sender *WsClient, groupId int32, message []byte) {

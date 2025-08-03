@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"go.uber.org/zap"
 )
 
 func (handler *Handler) wssHandler(connManager *ws.ConnectionManager, w http.ResponseWriter, r *http.Request) {
@@ -23,11 +24,11 @@ func (handler *Handler) wssHandler(connManager *ws.ConnectionManager, w http.Res
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logs.Errorf("Websocket upgrade failed, error: %v", err)
+		zap.L().Error("Websocket upgrade failed", zap.Error(err))
 		return
 	}
 
-	logs.Info("upgrader success")
+	zap.L().Info("Websocket upgrader success...")
 
 	client := &ws.WsClient{
 		UserId:      handler.CurrentUserInfo.ID,
@@ -100,9 +101,73 @@ func (handler *Handler) wsHandler(ctx *gin.Context) {
 	}
 }
 
+func (handler *Handler) wsHandlerV2(ctx *gin.Context) {
+
+	// 用户认证
+	auth := ctx.Request.Header.Get(authorizationHeader)
+	payload, err := handler.Token.VerifyToken(auth)
+	if err != nil {
+		handler.Error(ctx, http.StatusUnauthorized, err.Error())
+		zap.L().Error("Toekn校验失败", zap.Error(err))
+		return
+	}
+	var loginUserInfo db.LoginUserInfo
+	key := "user:" + payload.Username
+	err = handler.RedisClient.Get(ctx, key).Scan(&loginUserInfo)
+	if err != nil {
+		zap.L().Error("缓存获取失败", zap.Error(err))
+		handler.ServerError(ctx)
+		return
+	}
+
+	// 升级 HTTP 连接为 Websocket
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+
+	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+	if err != nil {
+		handler.Error(ctx, http.StatusBadRequest, "Websocket ungrade failed")
+		zap.L().Error("Websocket upgrade failed",
+			zap.Error(err),
+			zap.String("remote", ctx.Request.RemoteAddr),
+			zap.String("path", ctx.Request.URL.Path),
+		)
+		return
+	}
+
+	zap.L().Info("Websocket upgrader success...",
+		zap.String("remote", ctx.Request.RemoteAddr),
+		zap.String("username", loginUserInfo.Username),
+	)
+
+	client := &ws.WsClient{
+		UserId: loginUserInfo.ID,
+		Conn:   conn,
+		Send:   make(chan []byte, 256),
+	}
+	client.ConnManager.Register <- client
+
+	defer func() {
+		// 防止重复注销
+		client.ConnManager.Unregister <- client
+		conn.Close()
+	}()
+
+	go client.WritePump()
+	go client.ReadPump()
+}
+
 func (handler *Handler) privateChatMessage(ctx context.Context, msg db.Message) error {
 	// 验证好友关系
-	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{FromUserID: msg.SenderID, ToUserID: msg.ReceiverID}); !exists {
+	if exists, _ := handler.Store.ExistsFriendship(ctx, &db.ExistsFriendshipParams{
+		UserID:   msg.SenderID,
+		FriendID: msg.ReceiverID,
+	}); !exists {
 		return fmt.Errorf("非好友无法发送消息")
 	}
 
