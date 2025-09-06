@@ -72,7 +72,7 @@ func generateKeyPair() {
 	publicKeyPemBytes := pem.EncodeToMemory(publicKeyPem)
 
 	// 将私钥和公钥保存到文件
-	err = os.WriteFile(privateKeyFile, privateKeyPemBytes, 0644)
+	err = os.WriteFile(privateKeyFile, privateKeyPemBytes, 0600)
 	if err != nil {
 		log.Fatalf("Failed to save private key: %v", err)
 	}
